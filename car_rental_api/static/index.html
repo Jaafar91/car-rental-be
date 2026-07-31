@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🚗 Car Rental Admin</title>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <i class="fas fa-car"></i>
+      <span>Car Rental Admin</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-page="dashboard">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      </a>
+      <a href="#" class="nav-item" data-page="branches">
+        <i class="fas fa-code-branch"></i> Branches
+      </a>
+      <a href="#" class="nav-item" data-page="car_categories">
+        <i class="fas fa-tags"></i> Car Categories
+      </a>
+      <a href="#" class="nav-item" data-page="car_status">
+        <i class="fas fa-traffic-light"></i> Car Status
+      </a>
+      <a href="#" class="nav-item" data-page="cars">
+        <i class="fas fa-car-side"></i> Cars
+      </a>
+      <a href="#" class="nav-item" data-page="customers">
+        <i class="fas fa-users"></i> Customers
+      </a>
+      <a href="#" class="nav-item" data-page="staff">
+        <i class="fas fa-user-tie"></i> Staff
+      </a>
+      <a href="#" class="nav-item" data-page="reservations">
+        <i class="fas fa-calendar-check"></i> Reservations
+      </a>
+      <a href="#" class="nav-item" data-page="rentals">
+        <i class="fas fa-key"></i> Rentals
+      </a>
+      <a href="#" class="nav-item" data-page="payments">
+        <i class="fas fa-credit-card"></i> Payments
+      </a>
+      <a href="#" class="nav-item" data-page="maintenance">
+        <i class="fas fa-wrench"></i> Maintenance
+      </a>
+    </nav>
+  </aside>
+
+  <!-- ── MAIN CONTENT ── -->
+  <div class="main-wrapper">
+
+    <!-- Top Bar -->
+    <header class="topbar">
+      <button class="toggle-btn" id="toggleSidebar">
+        <i class="fas fa-bars"></i>
+      </button>
+      <h1 class="page-title" id="pageTitle">Dashboard</h1>
+      <div class="topbar-right">
+        <span class="badge-api" id="apiStatus">
+          <i class="fas fa-circle"></i> API Connected
+        </span>
+      </div>
+    </header>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Page Content -->
+    <main class="content" id="pageContent">
+      <!-- Dynamically loaded -->
+    </main>
+
+  </div>
+
+  <!-- ── MODAL ── -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <h2 id="modalTitle">Form</h2>
+        <button class="modal-close" id="modalClose">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- Dynamic form -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="modalCancel">Cancel</button>
+        <button class="btn btn-primary" id="modalSubmit">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/pages/branches.js"></script>
+  <script src="/static/js/pages/car_categories.js"></script>
+  <script src="/static/js/pages/car_status.js"></script>
+  <script src="/static/js/pages/cars.js"></script>
+  <script src="/static/js/pages/customers.js"></script>
+  <script src="/static/js/pages/staff.js"></script>
+  <script src="/static/js/pages/reservations.js"></script>
+  <script src="/static/js/pages/rentals.js"></script>
+  <script src="/static/js/pages/payments.js"></script>
+  <script src="/static/js/pages/maintenance.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

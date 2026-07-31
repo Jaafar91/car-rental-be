@@ -14,7 +14,7 @@ class Branch(Base):
     __tablename__ = "branches"
 
     branch_id  = Column(BigInteger, primary_key=True, autoincrement=True)
-    name       = Column(String(120), nullable=False, unique=True)
+    branch_name       = Column(String(120), nullable=False, unique=True)
     address    = Column(Text, nullable=True)
     phone      = Column(String(30), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -27,7 +27,7 @@ class CarCategory(Base):
     __tablename__ = "car_categories"
 
     category_id = Column(BigInteger, primary_key=True, autoincrement=True)
-    name        = Column(String(80), nullable=False, unique=True)
+    category_name   = Column(String(80), nullable=False, unique=True)
     daily_rate  = Column(Numeric(10, 2), nullable=False)
     created_at  = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
@@ -43,7 +43,7 @@ class CarStatus(Base):
     __tablename__ = "car_status"
 
     status_id = Column(SmallInteger, primary_key=True, autoincrement=True)
-    name      = Column(String(30), nullable=False, unique=True)
+    status_name      = Column(String(30), nullable=False, unique=True)
 
 
 # ─────────────────────────────────────────

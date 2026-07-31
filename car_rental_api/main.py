@@ -1,5 +1,9 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from database import engine, Base
+
+# Import all routers
 from routers import (
     branches, car_categories, car_status,
     customers, staff, cars, maintenance,
@@ -8,12 +12,17 @@ from routers import (
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(
-    title="🚗 Car Rental API",
-    description="Complete Car Rental Management System",
-    version="1.0.0"
-)
+app = FastAPI(title="Car Rental API", version="1.0.0")
 
+# ✅ Serve static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# ✅ Serve dashboard at root
+@app.get("/")
+def serve_dashboard():
+    return FileResponse("static/index.html")
+
+# Include all routers
 app.include_router(branches.router)
 app.include_router(car_categories.router)
 app.include_router(car_status.router)
@@ -24,7 +33,3 @@ app.include_router(maintenance.router)
 app.include_router(reservations.router)
 app.include_router(rentals.router)
 app.include_router(payments.router)
-
-@app.get("/")
-def root():
-    return {"message": "Welcome to Car Rental API 🚗"}

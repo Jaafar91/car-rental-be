@@ -10,7 +10,7 @@ from enum import Enum
 # 🏢 BRANCH
 # ══════════════════════════════════════════════════════════════
 class BranchBase(BaseModel):
-    name: str
+    branch_name: str
     address: Optional[str] = None
     phone: Optional[str] = None
 
@@ -36,7 +36,7 @@ class BranchResponse(BranchBase):
 # 🚗 CAR CATEGORY
 # ══════════════════════════════════════════════════════════════
 class CarCategoryBase(BaseModel):
-    name: str
+    category_name: str
     daily_rate: Decimal
 
 
@@ -59,7 +59,7 @@ class CarCategoryResponse(CarCategoryBase):
 # 🔵 CAR STATUS
 # ══════════════════════════════════════════════════════════════
 class CarStatusBase(BaseModel):
-    name: str
+    status_name: str
 
 
 class CarStatusCreate(CarStatusBase):
