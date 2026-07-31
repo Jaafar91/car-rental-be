@@ -1,0 +1,756 @@
+{
+  "info": {
+    "name": "Car Rental API",
+    "description": "Complete CRUD collection matching updated DDL models",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🏢 Branches",
+      "item": [
+        {
+          "name": "List All Branches",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/branches/",
+              "host": ["{{base_url}}"],
+              "path": ["branches", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Branch by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/branches/1",
+              "host": ["{{base_url}}"],
+              "path": ["branches", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Branch",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/branches/",
+              "host": ["{{base_url}}"],
+              "path": ["branches", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Downtown Branch\",\n  \"address\": \"123 Main Street, New York, NY 10001\",\n  \"phone\": \"+1-212-555-0101\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Branch",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/branches/1",
+              "host": ["{{base_url}}"],
+              "path": ["branches", "1"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Downtown Branch Updated\",\n  \"address\": \"456 Broadway, New York, NY 10002\",\n  \"phone\": \"+1-212-555-0199\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Branch",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/branches/1",
+              "host": ["{{base_url}}"],
+              "path": ["branches", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🚗 Car Categories",
+      "item": [
+        {
+          "name": "List All Categories",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/car-categories/",
+              "host": ["{{base_url}}"],
+              "path": ["car-categories", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Category by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/car-categories/1",
+              "host": ["{{base_url}}"],
+              "path": ["car-categories", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/car-categories/",
+              "host": ["{{base_url}}"],
+              "path": ["car-categories", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Economy\",\n  \"daily_rate\": 45.00\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/car-categories/1",
+              "host": ["{{base_url}}"],
+              "path": ["car-categories", "1"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Economy Plus\",\n  \"daily_rate\": 55.00\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/car-categories/1",
+              "host": ["{{base_url}}"],
+              "path": ["car-categories", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔵 Car Status",
+      "item": [
+        {
+          "name": "List All Statuses",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/car-status/",
+              "host": ["{{base_url}}"],
+              "path": ["car-status", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Status by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/car-status/1",
+              "host": ["{{base_url}}"],
+              "path": ["car-status", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Status",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/car-status/",
+              "host": ["{{base_url}}"],
+              "path": ["car-status", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"available\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/car-status/1",
+              "host": ["{{base_url}}"],
+              "path": ["car-status", "1"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"maintenance\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Status",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/car-status/1",
+              "host": ["{{base_url}}"],
+              "path": ["car-status", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👤 Customers",
+      "item": [
+        {
+          "name": "List All Customers",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/customers/",
+              "host": ["{{base_url}}"],
+              "path": ["customers", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Customer by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/customers/1",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers/",
+              "host": ["{{base_url}}"],
+              "path": ["customers", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"+1-555-123-4567\",\n  \"license_no\": \"DL-NY-987654321\",\n  \"license_exp\": \"2027-06-30\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Customer",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers/1",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "1"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"John Doe Updated\",\n  \"email\": \"john.updated@example.com\",\n  \"phone\": \"+1-555-999-8888\",\n  \"license_no\": \"DL-NY-111222333\",\n  \"license_exp\": \"2029-12-31\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Customer",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/customers/1",
+              "host": ["{{base_url}}"],
+              "path": ["customers", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👨‍💼 Staff",
+      "item": [
+        {
+          "name": "List All Staff",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/staff/",
+              "host": ["{{base_url}}"],
+              "path": ["staff", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Staff by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/staff/1",
+              "host": ["{{base_url}}"],
+              "path": ["staff", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Staff",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/staff/",
+              "host": ["{{base_url}}"],
+              "path": ["staff", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Alice Smith\",\n  \"email\": \"alice.smith@carrental.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Staff",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/staff/1",
+              "host": ["{{base_url}}"],
+              "path": ["staff", "1"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Alice Johnson\",\n  \"email\": \"alice.johnson@carrental.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Staff",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/staff/1",
+              "host": ["{{base_url}}"],
+              "path": ["staff", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🚙 Cars",
+      "item": [
+        {
+          "name": "List All Cars",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/cars/",
+              "host": ["{{base_url}}"],
+              "path": ["cars", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Car by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/cars/1",
+              "host": ["{{base_url}}"],
+              "path": ["cars", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Car",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cars/",
+              "host": ["{{base_url}}"],
+              "path": ["cars", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_id\": 1,\n  \"status_id\": 1,\n  \"branch_id\": 1,\n  \"vin\": \"1HGBH41JXMN109186\",\n  \"license_plate\": \"NYC-1234\",\n  \"make\": \"Toyota\",\n  \"model\": \"Corolla\",\n  \"year\": 2022,\n  \"seat_count\": 5,\n  \"transmission\": \"automatic\",\n  \"fuel_type\": \"gasoline\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Car",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cars/1",
+              "host": ["{{base_url}}"],
+              "path": ["cars", "1"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_id\": 1,\n  \"status_id\": 2,\n  \"branch_id\": 1,\n  \"vin\": \"1HGBH41JXMN109186\",\n  \"license_plate\": \"NYC-1234\",\n  \"make\": \"Toyota\",\n  \"model\": \"Corolla\",\n  \"year\": 2022,\n  \"seat_count\": 5,\n  \"transmission\": \"manual\",\n  \"fuel_type\": \"hybrid\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Car",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/cars/1",
+              "host": ["{{base_url}}"],
+              "path": ["cars", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔧 Maintenance",
+      "item": [
+        {
+          "name": "List All Maintenance",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/maintenance/",
+              "host": ["{{base_url}}"],
+              "path": ["maintenance", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Maintenance by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/maintenance/1",
+              "host": ["{{base_url}}"],
+              "path": ["maintenance", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Maintenance",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenance/",
+              "host": ["{{base_url}}"],
+              "path": ["maintenance", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"car_id\": 1,\n  \"description\": \"Full oil change and filter replacement\",\n  \"scheduled_at\": \"2025-08-01T09:00:00Z\",\n  \"completed_at\": null,\n  \"cost_amount\": 120.50\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Maintenance",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenance/1",
+              "host": ["{{base_url}}"],
+              "path": ["maintenance", "1"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"car_id\": 1,\n  \"description\": \"Oil change completed, brake pads replaced\",\n  \"scheduled_at\": \"2025-08-01T09:00:00Z\",\n  \"completed_at\": \"2025-08-01T11:30:00Z\",\n  \"cost_amount\": 285.00\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Maintenance",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/maintenance/1",
+              "host": ["{{base_url}}"],
+              "path": ["maintenance", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📅 Reservations",
+      "item": [
+        {
+          "name": "List All Reservations",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/reservations/",
+              "host": ["{{base_url}}"],
+              "path": ["reservations", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Reservation by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/reservations/1",
+              "host": ["{{base_url}}"],
+              "path": ["reservations", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Reservation",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservations/",
+              "host": ["{{base_url}}"],
+              "path": ["reservations", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": 1,\n  \"branch_id\": 1,\n  \"pickup_at\": \"2025-08-10T10:00:00Z\",\n  \"dropoff_at\": \"2025-08-15T10:00:00Z\",\n  \"status\": \"pending\",\n  \"notes\": \"Customer requested a child seat\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Reservation",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservations/1",
+              "host": ["{{base_url}}"],
+              "path": ["reservations", "1"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": 1,\n  \"branch_id\": 1,\n  \"pickup_at\": \"2025-08-10T10:00:00Z\",\n  \"dropoff_at\": \"2025-08-17T10:00:00Z\",\n  \"status\": \"confirmed\",\n  \"notes\": \"Extended by 2 days, child seat confirmed\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Reservation",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/reservations/1",
+              "host": ["{{base_url}}"],
+              "path": ["reservations", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🚀 Rentals",
+      "item": [
+        {
+          "name": "List All Rentals",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/rentals/",
+              "host": ["{{base_url}}"],
+              "path": ["rentals", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Rental by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/rentals/1",
+              "host": ["{{base_url}}"],
+              "path": ["rentals", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Rental",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/rentals/",
+              "host": ["{{base_url}}"],
+              "path": ["rentals", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reservation_id\": 1,\n  \"customer_id\": 1,\n  \"car_id\": 1,\n  \"branch_pickup_id\": 1,\n  \"branch_dropoff_id\": 1,\n  \"pickup_at\": \"2025-08-10T10:00:00Z\",\n  \"dropoff_at\": \"2025-08-15T10:00:00Z\",\n  \"daily_rate\": 45.00,\n  \"discount_amount\": 10.00,\n  \"currency\": \"USD\",\n  \"status\": \"active\",\n  \"mileage_start\": 15000,\n  \"mileage_end\": null,\n  \"total_amount\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Rental",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/rentals/1",
+              "host": ["{{base_url}}"],
+              "path": ["rentals", "1"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reservation_id\": 1,\n  \"customer_id\": 1,\n  \"car_id\": 1,\n  \"branch_pickup_id\": 1,\n  \"branch_dropoff_id\": 2,\n  \"pickup_at\": \"2025-08-10T10:00:00Z\",\n  \"dropoff_at\": \"2025-08-15T10:00:00Z\",\n  \"daily_rate\": 45.00,\n  \"discount_amount\": 10.00,\n  \"currency\": \"USD\",\n  \"status\": \"closed\",\n  \"mileage_start\": 15000,\n  \"mileage_end\": 15750,\n  \"total_amount\": 215.00\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Rental",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/rentals/1",
+              "host": ["{{base_url}}"],
+              "path": ["rentals", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💳 Payments",
+      "item": [
+        {
+          "name": "List All Payments",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/payments/",
+              "host": ["{{base_url}}"],
+              "path": ["payments", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Payment by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/payments/1",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payments/",
+              "host": ["{{base_url}}"],
+              "path": ["payments", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rental_id\": 1,\n  \"amount\": 215.00,\n  \"currency\": \"USD\",\n  \"method\": \"card\",\n  \"status\": \"paid\",\n  \"paid_at\": \"2025-08-15T11:00:00Z\",\n  \"reference\": \"TXN-20250815-001\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Payment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payments/1",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "1"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rental_id\": 1,\n  \"amount\": 215.00,\n  \"currency\": \"USD\",\n  \"method\": \"bank_transfer\",\n  \"status\": \"refunded\",\n  \"paid_at\": \"2025-08-15T11:00:00Z\",\n  \"reference\": \"TXN-20250815-001-REF\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Payment",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/payments/1",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "1"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

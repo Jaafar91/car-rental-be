@@ -1,0 +1,55 @@
+# ──────────────────────────────────────────
+# 🐍 Python Cache Files
+# ──────────────────────────────────────────
+
+# Specific project __pycache__ (relative path)
+car_rental_api/__pycache__/
+
+# All __pycache__ directories (recommended)
+**/__pycache__/
+__pycache__/
+
+# Compiled Python files
+*.py[cod]
+*.pyo
+*.pyd
+
+# ──────────────────────────────────────────
+# 🧪 Virtual Environment
+# ──────────────────────────────────────────
+venv/
+.venv/
+env/
+.env/
+ENV/
+
+# ──────────────────────────────────────────
+# ⚙️ Environment Variables
+# ──────────────────────────────────────────
+.env
+*.env
+
+# ──────────────────────────────────────────
+# 🛠️ PyCharm IDE Files
+# ──────────────────────────────────────────
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# ──────────────────────────────────────────
+# 📦 Distribution / Build
+# ──────────────────────────────────────────
+dist/
+build/
+*.egg-info/
+*.egg
+
+# ──────────────────────────────────────────
+# 🧹 Misc
+# ──────────────────────────────────────────
+*.log
+*.sqlite3
+*.db
+.DS_Store
+Thumbs.db
