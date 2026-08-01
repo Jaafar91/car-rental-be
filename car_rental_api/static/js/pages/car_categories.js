@@ -79,14 +79,6 @@ const car_categories = {
                     ? `<strong>$${parseFloat(row.daily_rate).toFixed(2)}</strong>`
                     : '<span style="color:#94a3b8">—</span>'
               },
-              {
-                key:   'created_at',
-                label: 'Created At',
-                render: row =>
-                  row.created_at
-                    ? new Date(row.created_at).toLocaleDateString()
-                    : '<span style="color:#94a3b8">—</span>'
-              },
             ],
             this.data,
             row => `

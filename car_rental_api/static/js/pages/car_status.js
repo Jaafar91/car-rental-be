@@ -73,14 +73,6 @@ const car_status = {
                     ? '<span class="badge badge-success">✔ Yes</span>'
                     : '<span class="badge badge-danger">✘ No</span>'
               },
-              {
-                key: 'created_at',
-                label: 'Created At',
-                render: row =>
-                  row.created_at
-                    ? new Date(row.created_at).toLocaleDateString()
-                    : '<span style="color:#94a3b8">—</span>'
-              },
             ],
             this.data,
             row => `

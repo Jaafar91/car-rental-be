@@ -13,6 +13,9 @@ class BranchBase(BaseModel):
     branch_name: str
     address: Optional[str] = None
     phone: Optional[str] = None
+    email: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
 
 
 class BranchCreate(BranchBase):
@@ -37,6 +40,7 @@ class BranchResponse(BranchBase):
 # ══════════════════════════════════════════════════════════════
 class CarCategoryBase(BaseModel):
     category_name: str
+    description: Optional[str] = None 
     daily_rate: Decimal
 
 
@@ -60,6 +64,7 @@ class CarCategoryResponse(CarCategoryBase):
 # ══════════════════════════════════════════════════════════════
 class CarStatusBase(BaseModel):
     status_name: str
+    description: Optional[str] = None 
 
 
 class CarStatusCreate(CarStatusBase):

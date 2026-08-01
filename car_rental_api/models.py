@@ -17,6 +17,9 @@ class Branch(Base):
     branch_name       = Column(String(120), nullable=False, unique=True)
     address    = Column(Text, nullable=True)
     phone      = Column(String(30), nullable=True)
+    email      = Column(String(255), nullable=True)
+    city      = Column(String(255), nullable=True)
+    state      = Column(String(255), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
@@ -30,6 +33,7 @@ class CarCategory(Base):
     category_name   = Column(String(80), nullable=False, unique=True)
     daily_rate  = Column(Numeric(10, 2), nullable=False)
     created_at  = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    description = Column(String(255), nullable=True)
 
     __table_args__ = (
         CheckConstraint("daily_rate >= 0", name="car_categories_daily_rate_check"),
@@ -44,6 +48,7 @@ class CarStatus(Base):
 
     status_id = Column(SmallInteger, primary_key=True, autoincrement=True)
     status_name      = Column(String(30), nullable=False, unique=True)
+    description = Column(String(255), nullable=True)
 
 
 # ─────────────────────────────────────────
