@@ -38,7 +38,7 @@ const rentals = {
 
   customerLabel(id) {
     const c = this.customers.find(x => x.customer_id === id);
-    return c ? `${c.first_name} ${c.last_name}` : `Customer #${id}`;
+    return c ? `${c.full_name}` : `Customer #${id}`;
   },
 
   staffLabel(id) {
@@ -191,12 +191,12 @@ const rentals = {
 
     const custOpts = this.customers
       .map(c => `<option value="${c.customer_id}" ${d.customer_id === c.customer_id ? 'selected':''}>
-                   ${c.first_name} ${c.last_name} (${c.email})
+                   ${c.full_name} (${c.email})
                  </option>`).join('');
 
     const staffOpts = this.staff
       .map(s => `<option value="${s.staff_id}" ${d.staff_id === s.staff_id ? 'selected':''}>
-                   ${s.first_name} ${s.last_name}
+                   ${s.first_name} ${s.last_name} 
                  </option>`).join('');
 
     const statuses = ['active', 'completed', 'overdue', 'cancelled'];

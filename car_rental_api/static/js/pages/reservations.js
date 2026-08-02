@@ -14,6 +14,18 @@ const reservations = {
     } catch (e) { showToast(e.message, 'error'); }
   },
 
+  // ─── Helper: convert stored ISO string → datetime-local input value ─────────
+  // datetime-local expects: "YYYY-MM-DDTHH:MM" (no seconds, no timezone)
+  toInputValue(dt) {
+    if (!dt) return '';
+    // Handle both "2024-06-01T14:30:00Z" and "2024-06-01 14:30:00"
+    const d = new Date(dt);
+    if (isNaN(d)) return '';
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}` +
+           `T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  },
+
   render() {
     document.getElementById('pageContent').innerHTML = `
       <div class="page-header">
@@ -31,14 +43,14 @@ const reservations = {
             { key: 'reservation_id', label: 'ID' },
             { key: 'customer_id',    label: 'Customer', render: r => {
               const c = this.customers.find(x => x.customer_id === r.customer_id);
-              return c ? `${c.first_name} ${c.last_name}` : r.customer_id;
+              return c ? `${c.full_name}` : r.customer_id;
             }},
             { key: 'car_id', label: 'Car', render: r => {
               const c = this.cars.find(x => x.car_id === r.car_id);
               return c ? `${c.make} ${c.model}` : r.car_id;
             }},
-            { key: 'start_date',  label: 'Start' },
-            { key: 'end_date',    label: 'End' },
+            { key: 'pickup_at',  label: 'Start' },
+            { key: 'dropoff_at',    label: 'End' },
             { key: 'status',      label: 'Status', render: r => statusBadge(r.status) },
             { key: 'total_amount',label: 'Total',  render: r => `$${r.total_amount || 0}` },
           ], this.data, row => `
@@ -57,7 +69,7 @@ const reservations = {
   formHTML(d = {}) {
     const custOpts = this.customers.map(c =>
       `<option value="${c.customer_id}" ${d.customer_id === c.customer_id ? 'selected' : ''}>
-        ${c.first_name} ${c.last_name}
+        ${c.full_name}
       </option>`).join('');
     const carOpts = this.cars.map(c =>
       `<option value="${c.car_id}" ${d.car_id === c.car_id ? 'selected' : ''}>
@@ -66,28 +78,40 @@ const reservations = {
 
     return `
       <div class="form-group"><label>Customer *</label>
-        <select id="f_customer_id"><option value="">-- Select --</option>${custOpts}</select>
+        <select id="f_customer_id">
+          <option value="">-- Select --</option>${custOpts}
+        </select>
       </div>
       <div class="form-group"><label>Car *</label>
-        <select id="f_car_id"><option value="">-- Select --</option>${carOpts}</select>
+        <select id="f_car_id">
+          <option value="">-- Select --</option>${carOpts}
+        </select>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Start Date *</label>
-          <input id="f_start_date" type="date" value="${d.start_date || ''}"/>
+        <div class="form-group">
+          <label>📅 Pickup Date & Time *</label>
+          <input id="f_pickup_at"
+                 type="datetime-local"
+                 value="${this.toInputValue(d.pickup_at)}"/>
         </div>
-        <div class="form-group"><label>End Date *</label>
-          <input id="f_end_date" type="date" value="${d.end_date || ''}"/>
+        <div class="form-group">
+          <label>📅 Dropoff Date & Time *</label>
+          <input id="f_dropoff_at"
+                 type="datetime-local"
+                 value="${this.toInputValue(d.dropoff_at)}"/>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>Status</label>
           <select id="f_status">
             ${['pending','confirmed','cancelled','completed'].map(s =>
-              `<option value="${s}" ${d.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+              `<option value="${s}" ${d.status === s ? 'selected' : ''}>${s}</option>`
+            ).join('')}
           </select>
         </div>
         <div class="form-group"><label>Total Amount</label>
-          <input id="f_total_amount" type="number" step="0.01" value="${d.total_amount || ''}"/>
+          <input id="f_total_amount" type="number" step="0.01"
+                 value="${d.total_amount || ''}"/>
         </div>
       </div>
       <div class="form-group"><label>Notes</label>
@@ -96,11 +120,15 @@ const reservations = {
   },
 
   getFormData() {
+
+    const pickup  = document.getElementById('f_pickup_at').value;
+    const dropoff = document.getElementById('f_dropoff_at').value;
+
     return {
       customer_id:   parseInt(document.getElementById('f_customer_id').value),
       car_id:        parseInt(document.getElementById('f_car_id').value),
-      start_date:    document.getElementById('f_start_date').value,
-      end_date:      document.getElementById('f_end_date').value,
+      pickup_at:    pickup  ? new Date(pickup).toISOString()  : null,  // ✅ Send ISO string
+      dropoff_at:   dropoff ? new Date(dropoff).toISOString() : null,  // ✅ Send ISO string
       status:        document.getElementById('f_status').value,
       total_amount:  parseFloat(document.getElementById('f_total_amount').value) || null,
       notes:         document.getElementById('f_notes').value,

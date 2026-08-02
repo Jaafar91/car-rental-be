@@ -113,8 +113,14 @@ class CustomerResponse(CustomerBase):
 # 👨‍💼 STAFF
 # ══════════════════════════════════════════════════════════════
 class StaffBase(BaseModel):
-    full_name: str
+    first_name: str
+    last_name: str
+    branch_id: int
     email: Optional[str] = None
+    phone: Optional[str] = None
+    role: Optional[str] = None
+    hire_date: Optional[date] = None
+    is_active: Optional[bool] = True
 
 
 class StaffCreate(StaffBase):
@@ -172,6 +178,7 @@ class CarResponse(CarBase):
 class MaintenanceBase(BaseModel):
     car_id: int
     description: Optional[str] = None
+    maintenance_type: Optional[str] = None
     scheduled_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     cost_amount: Optional[Decimal] = None
@@ -206,6 +213,8 @@ class ReservationStatus(str, Enum):
 class ReservationBase(BaseModel):
     customer_id: int
     branch_id: Optional[int] = None
+    car_id: int
+    total_amount: Optional[Decimal] = Decimal("0.00")
     pickup_at: datetime
     dropoff_at: datetime
     status: Optional[ReservationStatus] = ReservationStatus.pending

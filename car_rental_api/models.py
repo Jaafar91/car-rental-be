@@ -1,5 +1,5 @@
 from sqlalchemy import (
-    Column, Integer, SmallInteger, BigInteger, String, Text,
+    Column, Integer, SmallInteger, BigInteger, String, Text,Boolean,
     Date, DateTime, Numeric, ForeignKey, CheckConstraint,
     Index, func
 )
@@ -73,8 +73,14 @@ class Staff(Base):
     __tablename__ = "staff"
 
     staff_id   = Column(BigInteger, primary_key=True, autoincrement=True)
-    full_name  = Column(String(160), nullable=False)
+    first_name  = Column(String(160), nullable=False)
+    last_name  = Column(String(160), nullable=False)
     email      = Column(String(255), nullable=True, unique=True)
+    branch_id  = Column(BigInteger, ForeignKey("branches.branch_id"), nullable=True)
+    phone      = Column(String(30), nullable=True)
+    role      = Column(String(30), nullable=True)
+    hire_date   = Column(Date, nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
@@ -119,6 +125,7 @@ class Maintenance(Base):
     maintenance_id = Column(BigInteger, primary_key=True, autoincrement=True)
     car_id         = Column(BigInteger, ForeignKey("cars.car_id", ondelete="CASCADE"), nullable=False)
     description    = Column(Text, nullable=False)
+    maintenance_type  = Column(String, nullable=False)
     scheduled_at   = Column(DateTime(timezone=True), nullable=True)
     completed_at   = Column(DateTime(timezone=True), nullable=True)
     cost_amount    = Column(Numeric(10, 2), nullable=False, default=0)
@@ -139,6 +146,8 @@ class Reservation(Base):
     reservation_id = Column(BigInteger, primary_key=True, autoincrement=True)
     customer_id    = Column(BigInteger, ForeignKey("customers.customer_id"), nullable=False)
     branch_id      = Column(BigInteger, ForeignKey("branches.branch_id"), nullable=True)
+    car_id         = Column(BigInteger, ForeignKey("cars.car_id"), nullable=False)
+    total_amount   = Column(Numeric(10, 2), nullable=True)
     pickup_at      = Column(DateTime(timezone=True), nullable=False)
     dropoff_at     = Column(DateTime(timezone=True), nullable=False)
     status         = Column(String(30), nullable=False, default="pending")

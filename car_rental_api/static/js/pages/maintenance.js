@@ -107,11 +107,11 @@ const maintenance = {
                     : '<span style="color:#94a3b8">—</span>'
               },
               {
-                key: 'cost',
+                key: 'cost_amount',
                 label: 'Cost',
                 render: row =>
-                  row.cost != null
-                    ? `<strong>$${parseFloat(row.cost).toFixed(2)}</strong>`
+                  row.cost_amount != null
+                    ? `<strong>$${parseFloat(row.cost_amount).toFixed(2)}</strong>`
                     : '<span style="color:#94a3b8">—</span>'
               },
               {
@@ -232,7 +232,7 @@ const maintenance = {
           step="0.01"
           min="0"
           placeholder="e.g. 150.00"
-          value="${d.cost != null ? d.cost : ''}"
+          value="${d.cost_amount != null ? d.cost_amount : ''}"
         />
       </div>
 
@@ -254,7 +254,7 @@ const maintenance = {
     const status           = document.getElementById('f_maint_status').value;
     const scheduled_date   = document.getElementById('f_maint_sched').value;
     const completion_date  = document.getElementById('f_maint_comp').value;
-    const cost             = document.getElementById('f_maint_cost').value;
+    const cost_amount       = document.getElementById('f_maint_cost').value;
     const description      = document.getElementById('f_maint_desc').value.trim();
 
     if (!car_id) {
@@ -270,7 +270,7 @@ const maintenance = {
       status,
       scheduled_date:   scheduled_date  || null,
       completion_date:  completion_date || null,
-      cost:             cost !== ''     ? parseFloat(cost) : null,
+      cost_amount:      cost_amount !== ''     ? parseFloat(cost_amount) : null,
       description:      description     || null,
     };
   },

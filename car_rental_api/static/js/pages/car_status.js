@@ -11,6 +11,7 @@ const car_status = {
 
     try {
       this.data = await api.get('/car-status/');
+      this.data.sort((a, b) => a.status_id - b.status_id);
       this.render();
     } catch (e) {
       content.innerHTML = `
@@ -64,14 +65,6 @@ const car_status = {
                            : row.description}
                        </span>`
                     : '<span style="color:#94a3b8">—</span>'
-              },
-              {
-                key: 'is_available',
-                label: 'Available',
-                render: row =>
-                  row.is_available
-                    ? '<span class="badge badge-success">✔ Yes</span>'
-                    : '<span class="badge badge-danger">✘ No</span>'
               },
             ],
             this.data,

@@ -34,7 +34,7 @@ const cars = {
             { key: 'model',        label: 'Model' },
             { key: 'year',         label: 'Year' },
             { key: 'license_plate',label: 'Plate' },
-            { key: 'daily_rate',   label: 'Rate/Day', render: r => `$${r.daily_rate}` },
+            { key: 'daily_rate',   label: 'Rate/Day', render: r => `$${this.categories.find(c => c.category_id === r.category_id)?.daily_rate}` },
             { key: 'status_id',    label: 'Status', render: r => {
               const s = this.statuses.find(x => x.status_id === r.status_id);
               return statusBadge(s?.status_name || r.status_id);
@@ -71,11 +71,7 @@ const cars = {
       </div>
       <div class="form-row">
         <div class="form-group"><label>License Plate *</label><input id="f_license_plate" value="${d.license_plate || ''}"/></div>
-        <div class="form-group"><label>VIN</label><input id="f_vin" value="${d.vin || ''}"/></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Daily Rate</label><input id="f_daily_rate" type="number" step="0.01" value="${d.daily_rate || ''}"/></div>
-        <div class="form-group"><label>Mileage</label><input id="f_mileage" type="number" value="${d.mileage || ''}"/></div>
+        <div class="form-group"><label>VIN *</label><input id="f_vin" value="${d.vin || ''}"/></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>Category</label><select id="f_category_id"><option value="">--</option>${catOpts}</select></div>
