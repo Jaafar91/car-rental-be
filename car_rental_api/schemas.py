@@ -252,8 +252,9 @@ class RentalBase(BaseModel):
     car_id: int
     branch_pickup_id: Optional[int] = None
     branch_dropoff_id: Optional[int] = None
-    pickup_at: datetime
-    dropoff_at: datetime
+    rental_date: datetime
+    due_date: datetime
+    return_date: Optional[datetime] = None
     daily_rate: Decimal
     discount_amount: Optional[Decimal] = Decimal("0.00")
     currency: Optional[str] = "USD"
