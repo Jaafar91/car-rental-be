@@ -5,10 +5,10 @@ const staff = {
   // ── LOAD ──
   async load() {
     const content = document.getElementById('pageContent');
-    content.innerHTML = `
+    content.innerHTML = translateTemplate(`
       <div class="loading">
-        <div class="spinner"></div> Loading Staff...
-      </div>`;
+        <div class="spinner"></div> {{loading_staff}}
+      </div>`);
 
     try {
       [this.data, this.branches] = await Promise.all([
@@ -29,7 +29,7 @@ const staff = {
   // ── HELPERS ──
   branchLabel(id) {
     const b = this.branches.find(x => x.branch_id === id);
-    return b ? b.branch_name : `Branch #${id}`;
+    return b ? b.branch_name : `${t('col_branch')} #${id}`;
   },
 
   roleBadge(role) {
@@ -44,40 +44,40 @@ const staff = {
   // ── RENDER ──
   render() {
     const content = document.getElementById('pageContent');
-    content.innerHTML = `
+    content.innerHTML = translateTemplate(`
 
       <!-- Page Header -->
       <div class="page-header">
-        <h2><i class="fas fa-user-tie"></i> Staff</h2>
+        <h2><i class="fas fa-user-tie"></i> {{nav_staff}}</h2>
         <button class="btn btn-primary" onclick="staff.openCreate()">
-          <i class="fas fa-plus"></i> Add Staff
+          <i class="fas fa-plus"></i> {{btn_add_staff}}
         </button>
       </div>
 
       <!-- Stats Row -->
       <div style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;">
-        ${this._statCard('fas fa-users','Total Staff',this.data.length,'#6366f1')}
-        ${this._statCard('fas fa-user-shield','Admins',
+        ${this._statCard('fas fa-users', t('stat_total_staff'), this.data.length,'#6366f1')}
+        ${this._statCard('fas fa-user-shield', t('stat_admins'),
             this.data.filter(x=>x.role==='admin').length,'#ef4444')}
-        ${this._statCard('fas fa-user-cog','Managers',
+        ${this._statCard('fas fa-user-cog', t('stat_managers'),
             this.data.filter(x=>x.role==='manager').length,'#f59e0b')}
-        ${this._statCard('fas fa-user','Agents',
+        ${this._statCard('fas fa-user', t('stat_agents'),
             this.data.filter(x=>x.role==='agent').length,'#3b82f6')}
       </div>
 
       <!-- Table Wrapper -->
       <div class="table-wrapper">
         <div class="search-bar">
-          <input type="text" id="staffSearch" placeholder="🔍 Search staff..." />
+          <input type="text" id="staffSearch" placeholder="{{ph_search_staff}}" />
         </div>
 
         <div id="staffTable">
           ${buildTable(
             [
-              { key: 'staff_id',   label: 'ID' },
+              { key: 'staff_id',   label: t('col_id') },
               {
                 key: 'full_name',
-                label: 'Name',
+                label: t('col_name'),
                 render: row =>
                   `<div style="display:flex;align-items:center;gap:.6rem;">
                      <div style="width:34px;height:34px;border-radius:50%;
@@ -94,22 +94,22 @@ const staff = {
               },
               {
                 key: 'role',
-                label: 'Role',
+                label: t('col_role'),
                 render: row => this.roleBadge(row.role)
               },
               {
                 key: 'branch_id',
-                label: 'Branch',
+                label: t('col_branch'),
                 render: row =>
                   row.branch_id
                     ? this.branchLabel(row.branch_id)
                     : '<span style="color:#94a3b8">—</span>'
               },
-              { key: 'phone', label: 'Phone',
+              { key: 'phone', label: t('col_phone'),
                 render: row => row.phone || '<span style="color:#94a3b8">—</span>' },
               {
                 key: 'hire_date',
-                label: 'Hire Date',
+                label: t('col_hire_date'),
                 render: row =>
                   row.hire_date
                     ? new Date(row.hire_date).toLocaleDateString()
@@ -117,30 +117,30 @@ const staff = {
               },
               {
                 key: 'is_active',
-                label: 'Active',
+                label: t('col_active'),
                 render: row =>
                   row.is_active
-                    ? '<span class="badge badge-success">✔ Active</span>'
-                    : '<span class="badge badge-danger">✘ Inactive</span>'
+                    ? `<span class="badge badge-success">✔ ${t('status_active')}</span>`
+                    : `<span class="badge badge-danger">✘ ${t('status_inactive')}</span>`
               },
             ],
             this.data,
             row => `
               <button
                 class="btn btn-warning btn-sm"
-                title="Edit"
+                title="${t('btn_edit')}"
                 onclick="staff.openEdit(${row.staff_id})">
                 <i class="fas fa-edit"></i>
               </button>
               <button
                 class="btn btn-danger btn-sm"
-                title="Delete"
+                title="${t('btn_delete')}"
                 onclick="staff.delete(${row.staff_id})">
                 <i class="fas fa-trash"></i>
               </button>`
           )}
         </div>
-      </div>`;
+      </div>`);
 
     setupSearch('staffSearch', 'staffTable');
   },
@@ -172,13 +172,13 @@ const staff = {
       <!-- Name Row -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
         <div class="form-group">
-          <label for="f_staff_first">First Name <span style="color:red">*</span></label>
-          <input id="f_staff_first" type="text" placeholder="John"
+          <label for="f_staff_first">{{label_first_name}} <span style="color:red">*</span></label>
+          <input id="f_staff_first" type="text" placeholder="{{ph_first_name}}"
             value="${d.first_name || ''}" />
         </div>
         <div class="form-group">
-          <label for="f_staff_last">Last Name <span style="color:red">*</span></label>
-          <input id="f_staff_last" type="text" placeholder="Doe"
+          <label for="f_staff_last">{{label_last_name}} <span style="color:red">*</span></label>
+          <input id="f_staff_last" type="text" placeholder="{{ph_last_name}}"
             value="${d.last_name || ''}" />
         </div>
       </div>
@@ -186,13 +186,13 @@ const staff = {
       <!-- Email & Phone -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
         <div class="form-group">
-          <label for="f_staff_email">Email <span style="color:red">*</span></label>
-          <input id="f_staff_email" type="email" placeholder="john@example.com"
+          <label for="f_staff_email">{{label_email}} <span style="color:red">*</span></label>
+          <input id="f_staff_email" type="email" placeholder="{{ph_email}}"
             value="${d.email || ''}" />
         </div>
         <div class="form-group">
-          <label for="f_staff_phone">Phone</label>
-          <input id="f_staff_phone" type="text" placeholder="+1 555 000 0000"
+          <label for="f_staff_phone">{{label_phone}}</label>
+          <input id="f_staff_phone" type="text" placeholder="{{ph_phone}}"
             value="${d.phone || ''}" />
         </div>
       </div>
@@ -200,17 +200,17 @@ const staff = {
       <!-- Role & Branch -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
         <div class="form-group">
-          <label for="f_staff_role">Role <span style="color:red">*</span></label>
+          <label for="f_staff_role">{{label_role}} <span style="color:red">*</span></label>
           <select id="f_staff_role">
             ${roles.map(r =>
-              `<option value="${r}" ${d.role === r ? 'selected':''}>${r}</option>`
+              `<option value="${r}" ${d.role === r ? 'selected':''}>${t(`role_${r}`)}</option>`
             ).join('')}
           </select>
         </div>
         <div class="form-group">
-          <label for="f_staff_branch">Branch</label>
+          <label for="f_staff_branch">{{label_branch}}</label>
           <select id="f_staff_branch">
-            <option value="">— None —</option>
+            <option value="">{{placeholder_none}}</option>
             ${branchOpts}
           </select>
         </div>
@@ -219,15 +219,15 @@ const staff = {
       <!-- Hire Date & Active -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
         <div class="form-group">
-          <label for="f_staff_hire">Hire Date</label>
+          <label for="f_staff_hire">{{label_hire_date}}</label>
           <input id="f_staff_hire" type="date"
             value="${d.hire_date ? d.hire_date.substring(0,10) : ''}" />
         </div>
         <div class="form-group">
-          <label for="f_staff_active">Status</label>
+          <label for="f_staff_active">{{label_status}}</label>
           <select id="f_staff_active">
-            <option value="true"  ${d.is_active !== false ? 'selected':''}>✔ Active</option>
-            <option value="false" ${d.is_active === false  ? 'selected':''}>✘ Inactive</option>
+            <option value="true"  ${d.is_active !== false ? 'selected':''}>✔ ${t('status_active')}</option>
+            <option value="false" ${d.is_active === false  ? 'selected':''}>✘ ${t('status_inactive')}</option>
           </select>
         </div>
       </div>
@@ -235,8 +235,8 @@ const staff = {
       <!-- Password (only for create) -->
       ${!d.staff_id ? `
         <div class="form-group">
-          <label for="f_staff_pass">Password <span style="color:red">*</span></label>
-          <input id="f_staff_pass" type="password" placeholder="Min. 8 characters" />
+          <label for="f_staff_pass">{{label_password}} <span style="color:red">*</span></label>
+          <input id="f_staff_pass" type="password" placeholder="{{ph_password}}" />
         </div>` : ''}`;
   },
 
@@ -251,9 +251,9 @@ const staff = {
     const hire_date  = document.getElementById('f_staff_hire').value;
     const is_active  = document.getElementById('f_staff_active').value === 'true';
 
-    if (!first_name) { showToast('First name is required ⚠️', 'error'); return null; }
-    if (!last_name)  { showToast('Last name is required ⚠️',  'error'); return null; }
-    if (!email)      { showToast('Email is required ⚠️',      'error'); return null; }
+    if (!first_name) { showToast(t('error_first_name_required'), 'error'); return null; }
+    if (!last_name)  { showToast(t('error_last_name_required'),  'error'); return null; }
+    if (!email)      { showToast(t('error_email_required'),      'error'); return null; }
 
     const payload = {
       first_name,
@@ -270,7 +270,7 @@ const staff = {
     if (!isEdit) {
       const password = document.getElementById('f_staff_pass').value;
       if (!password || password.length < 8) {
-        showToast('Password must be at least 8 characters ⚠️', 'error');
+        showToast(t('error_password_length'), 'error');
         return null;
       }
       payload.password = password;
@@ -282,14 +282,14 @@ const staff = {
   // ── OPEN CREATE ──
   openCreate() {
     openModal(
-      '➕ Add Staff Member',
+      t('modal_add_staff'),
       this.formHTML(),
       async () => {
         const data = this.getFormData(false);
         if (!data) return;
         try {
           await api.post('/staff/', data);
-          showToast('Staff member created ✅', 'success');
+          showToast(t('toast_staff_created'), 'success');
           closeModal();
           this.load();
         } catch (e) {
@@ -302,17 +302,17 @@ const staff = {
   // ── OPEN EDIT ──
   openEdit(id) {
     const d = this.data.find(x => x.staff_id === id);
-    if (!d) { showToast('Staff not found ⚠️', 'error'); return; }
+    if (!d) { showToast(t('error_staff_not_found'), 'error'); return; }
 
     openModal(
-      '✏️ Edit Staff Member',
+      t('modal_edit_staff'),
       this.formHTML(d),
       async () => {
         const data = this.getFormData(true);
         if (!data) return;
         try {
           await api.put(`/staff/${id}`, data);
-          showToast('Staff updated ✅', 'success');
+          showToast(t('toast_staff_updated'), 'success');
           closeModal();
           this.load();
         } catch (e) {
@@ -328,11 +328,11 @@ const staff = {
     const name = d ? `"${d.first_name} ${d.last_name}"` : `#${id}`;
 
     confirmDelete(
-      `Delete staff member ${name}? This cannot be undone.`,
+      t('confirm_delete_staff', { name }),
       async () => {
         try {
           await api.delete(`/staff/${id}`);
-          showToast('Staff member deleted 🗑️', 'info');
+          showToast(t('toast_staff_deleted'), 'info');
           this.load();
         } catch (e) {
           showToast(e.message, 'error');

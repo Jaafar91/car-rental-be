@@ -7,10 +7,10 @@ const rentals = {
   // ── LOAD ──
   async load() {
     const content = document.getElementById('pageContent');
-    content.innerHTML = `
+    content.innerHTML = translateTemplate(`
       <div class="loading">
-        <div class="spinner"></div> Loading Rentals...
-      </div>`;
+        <div class="spinner"></div> {{loading_rentals}}
+      </div>`);
     try {
       [this.data, this.cars, this.customers, this.staff] = await Promise.all([
         api.get('/rentals/'),
@@ -32,16 +32,16 @@ const rentals = {
   // ── HELPERS ──
   carLabel(id) {
     const c = this.cars.find(x => x.car_id === id);
-    return c ? `${c.make} ${c.model} (${c.license_plate})` : `Car #${id}`;
+    return c ? `${c.make} ${c.model} (${c.license_plate})` : `${t('col_car')} #${id}`;
   },
   customerLabel(id) {
     const c = this.customers.find(x => x.customer_id === id);
-    return c ? `${c.full_name}` : `Customer #${id}`;
+    return c ? `${c.full_name}` : `${t('col_customer')} #${id}`;
   },
   staffLabel(id) {
-    if (!id) return '<span style="color:#94a3b8">—</span>';
+    if (!id) return `<span style="color:#94a3b8">${t('placeholder_empty')}</span>`;
     const s = this.staff.find(x => x.staff_id === id);
-    return s ? `${s.first_name} ${s.last_name}` : `Staff #${id}`;
+    return s ? `${s.first_name} ${s.last_name}` : `${t('label_staff')} #${id}`;
   },
   statusBadge(status) {
     const map = {
@@ -77,78 +77,78 @@ const rentals = {
     const totalRevenue = this.data
       .reduce((sum, r) => sum + (parseFloat(r.total_amount) || 0), 0);
 
-    content.innerHTML = `
+    content.innerHTML = translateTemplate(`
       <!-- Page Header -->
       <div class="page-header">
-        <h2><i class="fas fa-car-side"></i> Rentals</h2>
+        <h2><i class="fas fa-car-side"></i> {{nav_rentals}}</h2>
         <button class="btn btn-primary" onclick="rentals.openCreate()">
-          <i class="fas fa-plus"></i> New Rental
+          <i class="fas fa-plus"></i> {{btn_add_rental}}
         </button>
       </div>
 
       <!-- Stats Row -->
       <div class="stats-row" style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;">
-        ${this._statCard('fas fa-car',              'Total Rentals', this.data.length, '#6366f1')}
-        ${this._statCard('fas fa-check-circle',     'Active',
+        ${this._statCard('fas fa-car',              t('stat_total_rentals'), this.data.length, '#6366f1')}
+        ${this._statCard('fas fa-check-circle',     t('stat_active'),
             this.data.filter(x => x.status === 'active').length, '#10b981')}
-        ${this._statCard('fas fa-exclamation-circle','Overdue',
+        ${this._statCard('fas fa-exclamation-circle',t('stat_overdue'),
             this.data.filter(x => x.status === 'overdue').length, '#ef4444')}
-        ${this._statCard('fas fa-dollar-sign',      'Total Revenue',
+        ${this._statCard('fas fa-dollar-sign',      t('stat_total_revenue'),
             '$' + totalRevenue.toFixed(2), '#f59e0b')}
       </div>
 
       <!-- Table Wrapper -->
       <div class="table-wrapper">
         <div class="search-bar">
-          <input type="text" id="rentalSearch" placeholder="🔍 Search rentals..." />
+          <input type="text" id="rentalSearch" placeholder="{{ph_search_rentals}}" />
         </div>
         <div id="rentalTable">
           ${buildTable(
             [
-              { key: 'rental_id',   label: 'ID' },
-              { key: 'car_id',      label: 'Car',
+              { key: 'rental_id',   label: t('col_id') },
+              { key: 'car_id',      label: t('col_car'),
                 render: row => this.carLabel(row.car_id) },
-              { key: 'customer_id', label: 'Customer',
+              { key: 'customer_id', label: t('col_customer'),
                 render: row => this.customerLabel(row.customer_id) },
-              { key: 'status',      label: 'Status',
+              { key: 'status',      label: t('col_status'),
                 render: row => this.statusBadge(row.status) },
-              { key: 'rental_date', label: 'Rental Date',
+              { key: 'rental_date', label: t('col_rental_date'),
                 render: row => row.rental_date
                   ? new Date(row.rental_date).toLocaleDateString() : '—' },
-              { key: 'due_date',    label: 'Due Date',
+              { key: 'due_date',    label: t('col_due_date'),
                 render: row => row.due_date
                   ? new Date(row.due_date).toLocaleDateString() : '—' },
 
               // ✅ NEW COLUMN — Total Days & Hours
-              { key: '_duration',   label: 'Duration',
+              { key: '_duration',   label: t('col_duration'),
                 render: row => `<span style="color:#6366f1;font-weight:600;">
                   <i class="fas fa-clock" style="margin-right:4px;"></i>
                   ${this.formatDuration(row.rental_date, row.due_date)}
                 </span>` },
 
-              { key: 'return_date', label: 'Returned',
+              { key: 'return_date', label: t('col_returned'),
                 render: row => row.return_date
                   ? new Date(row.return_date).toLocaleDateString()
-                  : '<span style="color:#94a3b8">Pending</span>' },
-              { key: 'total_amount', label: 'Total ($)',
+                  : `<span style="color:#94a3b8">${t('status_pending')}</span>` },
+              { key: 'total_amount', label: t('col_total_amount'),
                 render: row => row.total_amount != null
                   ? `<strong>$${parseFloat(row.total_amount).toFixed(2)}</strong>` : '—' },
-              { key: 'staff_id',    label: 'Staff',
+              { key: 'staff_id',    label: t('col_staff'),
                 render: row => this.staffLabel(row.staff_id) },
             ],
             this.data,
             row => `
-              <button class="btn btn-warning btn-sm" title="Edit"
+              <button class="btn btn-warning btn-sm" title="${t('btn_edit')}"
                 onclick="rentals.openEdit(${row.rental_id})">
                 <i class="fas fa-edit"></i>
               </button>
-              <button class="btn btn-danger btn-sm" title="Delete"
+              <button class="btn btn-danger btn-sm" title="${t('btn_delete')}"
                 onclick="rentals.delete(${row.rental_id})">
                 <i class="fas fa-trash"></i>
               </button>`
           )}
         </div>
-      </div>`;
+      </div>`);
 
     setupSearch('rentalSearch', 'rentalTable');
   },
@@ -190,16 +190,16 @@ const rentals = {
       <!-- Row 1: Car & Customer -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
         <div class="form-group">
-          <label for="f_rental_car">Car <span style="color:red">*</span></label>
+          <label for="f_rental_car">{{label_car}} <span style="color:red">*</span></label>
           <select id="f_rental_car">
-            <option value="">— Select Car —</option>
+            <option value="">{{placeholder_select_car}}</option>
             ${carOpts}
           </select>
         </div>
         <div class="form-group">
-          <label for="f_rental_cust">Customer <span style="color:red">*</span></label>
+          <label for="f_rental_cust">{{label_customer}} <span style="color:red">*</span></label>
           <select id="f_rental_cust">
-            <option value="">— Select Customer —</option>
+            <option value="">{{placeholder_select_customer}}</option>
             ${custOpts}
           </select>
         </div>
@@ -208,17 +208,17 @@ const rentals = {
       <!-- Row 2: Status & Staff -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
         <div class="form-group">
-          <label for="f_rental_status">Status</label>
+          <label for="f_rental_status">{{label_status}}</label>
           <select id="f_rental_status">
             ${statuses.map(s =>
-              `<option value="${s}" ${d.status === s ? 'selected' : ''}>${s}</option>`
+              `<option value="${s}" ${d.status === s ? 'selected' : ''}>${t(`status_${s}`)}</option>`
             ).join('')}
           </select>
         </div>
         <div class="form-group">
-          <label for="f_rental_staff">Handled By (Staff)</label>
+          <label for="f_rental_staff">{{label_staff}}</label>
           <select id="f_rental_staff">
-            <option value="">— None —</option>
+            <option value="">{{placeholder_none}}</option>
             ${staffOpts}
           </select>
         </div>
@@ -227,11 +227,11 @@ const rentals = {
       <!-- Row 3a: Rental Date & Due Date -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
         <div class="form-group">
-          <label for="f_rental_date">Rental Date <span style="color:red">*</span></label>
+          <label for="f_rental_date">{{label_rental_date}} <span style="color:red">*</span></label>
           <input id="f_rental_date" type="datetime-local" value="${fmtDT(d.rental_date)}" />
         </div>
         <div class="form-group">
-          <label for="f_due_date">Due Date <span style="color:red">*</span></label>
+          <label for="f_due_date">{{label_due_date}} <span style="color:red">*</span></label>
           <input id="f_due_date" type="datetime-local" value="${fmtDT(d.due_date)}" />
         </div>
       </div>
@@ -240,7 +240,7 @@ const rentals = {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
         <div class="form-group">
           <label for="f_return_date">
-            Return Date
+            {{label_return_date}}
             <span style="color:#94a3b8;font-size:0.8rem;">(optional)</span>
           </label>
           <input id="f_return_date" type="datetime-local" value="${fmtDT(d.return_date)}" />
@@ -250,13 +250,13 @@ const rentals = {
         <div class="form-group">
           <label for="f_duration_display">
             <i class="fas fa-clock" style="color:#6366f1;margin-right:4px;"></i>
-            Total Duration
+            {{label_total_duration}}
           </label>
           <input
             id="f_duration_display"
             type="text"
             readonly
-            placeholder="Set rental & due date first"
+            placeholder="{{ph_set_dates_first}}"
             value="${this.formatDuration(d.rental_date, d.due_date)}"
             style="background:#1e293b;color:#6366f1;font-weight:600;
                    cursor:default;border:1px solid #334155;" />
@@ -266,21 +266,21 @@ const rentals = {
       <!-- Row 4: Amounts -->
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:0.25rem;">
         <div class="form-group">
-          <label for="f_daily_rate">Base Daily Rate ($) <span style="color:red">*</span></label>
+          <label for="f_daily_rate">{{label_daily_rate}} <span style="color:red">*</span></label>
           <input id="f_daily_rate" type="number" step="0.01" min="0"
-            placeholder="e.g. 49.99"
+            placeholder="{{ph_daily_rate}}"
             value="${d.daily_rate != null ? d.daily_rate : ''}" />
         </div>
         <div class="form-group">
-          <label for="f_discount_amount">Discount Amount ($)</label>
+          <label for="f_discount_amount">{{label_discount_amount}}</label>
           <input id="f_discount_amount" type="number" step="0.01" min="0"
-            placeholder="e.g. 10.00"
+            placeholder="{{ph_discount_amount}}"
             value="${d.discount_amount != null ? d.discount_amount : ''}" />
         </div>
         <div class="form-group">
-          <label for="f_rental_amount">Total Amount ($)</label>
+          <label for="f_rental_amount">{{label_total_amount}}</label>
           <input id="f_rental_amount" type="number" step="0.01" min="0"
-            placeholder="Auto-calculated"
+            placeholder="{{ph_auto_calculated}}"
             value="${d.total_amount != null ? d.total_amount : ''}"
             readonly
             style="background:#1e293b;color:#10b981;font-weight:700;
@@ -296,9 +296,9 @@ const rentals = {
 
       <!-- Row 5: Notes -->
       <div class="form-group">
-        <label for="f_rental_notes">Notes</label>
+        <label for="f_rental_notes">{{label_notes}}</label>
         <textarea id="f_rental_notes" rows="3"
-          placeholder="Optional notes...">${d.notes || ''}</textarea>
+          placeholder="{{ph_optional_notes}}">${d.notes || ''}</textarea>
       </div>`;
   },
 
@@ -329,19 +329,20 @@ const rentals = {
             const days       = Math.floor(totalHours / 24);
             const hours      = totalHours % 24;
 
-            if (days > 0 && hours > 0)
-              elDuration.value = `${days} day${days !== 1 ? 's' : ''}, ${hours} hour${hours !== 1 ? 's' : ''}`;
-            else if (days > 0)
-              elDuration.value = `${days} day${days !== 1 ? 's' : ''}`;
-            else
-              elDuration.value = `${hours} hour${hours !== 1 ? 's' : ''}`;
+            if (days > 0 && hours > 0) {
+              elDuration.value = `${days} ${t(days === 1 ? 'duration_day' : 'duration_days')}, ${hours} ${t(hours === 1 ? 'duration_hour' : 'duration_hours')}`;
+            } else if (days > 0) {
+              elDuration.value = `${days} ${t(days === 1 ? 'duration_day' : 'duration_days')}`;
+            } else {
+              elDuration.value = `${hours} ${t(hours === 1 ? 'duration_hour' : 'duration_hours')}`;
+            }
           } else {
             elDuration.value = '';
-            elDuration.placeholder = '⚠ Due date must be after rental date';
+            elDuration.placeholder = t('warning_due_after_rental');
           }
         } else {
           elDuration.value = '';
-          elDuration.placeholder = 'Set rental & due date first';
+          elDuration.placeholder = t('ph_set_dates_first');
         }
       }
 
@@ -354,7 +355,7 @@ const rentals = {
         if (diffMs <= 0) {
           elTotal.value       = '';
           elTotal.style.color = '#ef4444';
-          elTotal.placeholder = '⚠ Due date must be after rental date';
+          elTotal.placeholder = t('warning_due_after_rental');
           const hint = document.getElementById('calc_hint');
           if (hint) hint.textContent = '';
           return;
@@ -367,7 +368,7 @@ const rentals = {
 
         elTotal.value       = total.toFixed(2);
         elTotal.style.color = '#10b981';
-        elTotal.placeholder = 'Auto-calculated';
+        elTotal.placeholder = t('ph_auto_calculated');
 
         const hint = document.getElementById('calc_hint');
         if (hint) {
@@ -376,7 +377,7 @@ const rentals = {
         }
       } else {
         elTotal.value       = '';
-        elTotal.placeholder = 'Set rental & due date first';
+        elTotal.placeholder = t('ph_set_dates_first');
         const hint = document.getElementById('calc_hint');
         if (hint) hint.textContent = '';
       }
@@ -406,16 +407,16 @@ const rentals = {
     const staff_id        = document.getElementById('f_rental_staff').value;
     const notes           = document.getElementById('f_rental_notes').value.trim();
 
-    if (!car_id)      { showToast('Please select a car ⚠️', 'error');      return null; }
-    if (!customer_id) { showToast('Please select a customer ⚠️', 'error'); return null; }
-    if (!rental_date) { showToast('Rental date is required ⚠️', 'error');  return null; }
-    if (!due_date)    { showToast('Due date is required ⚠️', 'error');     return null; }
+    if (!car_id)      { showToast(t('error_select_car'), 'error');      return null; }
+    if (!customer_id) { showToast(t('error_select_customer'), 'error'); return null; }
+    if (!rental_date) { showToast(t('error_rental_date_required'), 'error');  return null; }
+    if (!due_date)    { showToast(t('error_due_date_required'), 'error');     return null; }
     if (due_date < rental_date) {
-      showToast('Due date must be after rental date ⚠️', 'error');
+      showToast(t('error_due_after_rental'), 'error');
       return null;
     }
     if (return_date && return_date < rental_date) {
-      showToast('Return date cannot be before rental date ⚠️', 'error');
+      showToast(t('error_return_before_rental'), 'error');
       return null;
     }
 
@@ -438,14 +439,14 @@ const rentals = {
   // ── OPEN CREATE ──
   openCreate() {
     openModal(
-      '➕ New Rental',
+      t('modal_add_rental'),
       this.formHTML(),
       async () => {
         const data = this.getFormData();
         if (!data) return;
         try {
           await api.post('/rentals/', data);
-          showToast('Rental created ✅', 'success');
+          showToast(t('toast_rental_created'), 'success');
           closeModal();
           this.load();
         } catch (e) {
@@ -459,16 +460,16 @@ const rentals = {
   // ── OPEN EDIT ──
   openEdit(id) {
     const d = this.data.find(x => x.rental_id === id);
-    if (!d) { showToast('Rental not found ⚠️', 'error'); return; }
+    if (!d) { showToast(t('error_rental_not_found'), 'error'); return; }
     openModal(
-      '✏️ Edit Rental',
+      t('modal_edit_rental'),
       this.formHTML(d),
       async () => {
         const data = this.getFormData();
         if (!data) return;
         try {
           await api.put(`/rentals/${id}`, data);
-          showToast('Rental updated ✅', 'success');
+          showToast(t('toast_rental_updated'), 'success');
           closeModal();
           this.load();
         } catch (e) {
@@ -482,11 +483,11 @@ const rentals = {
   // ── DELETE ──
   delete(id) {
     confirmDelete(
-      `Delete rental #${id}? Associated payments may also be affected.`,
+      t('confirm_delete_rental', { id }),
       async () => {
         try {
           await api.delete(`/rentals/${id}`);
-          showToast('Rental deleted 🗑️', 'info');
+          showToast(t('toast_rental_deleted'), 'info');
           this.load();
         } catch (e) {
           showToast(e.message, 'error');

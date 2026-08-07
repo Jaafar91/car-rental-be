@@ -5,10 +5,10 @@ const maintenance = {
   // ── LOAD ──
   async load() {
     const content = document.getElementById('pageContent');
-    content.innerHTML = `
+    content.innerHTML = translateTemplate(`
       <div class="loading">
-        <div class="spinner"></div> Loading Maintenance Records...
-      </div>`;
+        <div class="spinner"></div> {{loading_maintenance}}
+      </div>`);
 
     try {
       [this.data, this.cars] = await Promise.all([
@@ -29,7 +29,7 @@ const maintenance = {
   // ── HELPERS ──
   carLabel(car_id) {
     const c = this.cars.find(x => x.car_id === car_id);
-    return c ? `${c.make} ${c.model} (${c.license_plate})` : `Car #${car_id}`;
+    return c ? `${c.make} ${c.model} (${c.license_plate})` : `${t('col_car')} #${car_id}`;
   },
 
   statusBadge(status) {
@@ -39,60 +39,61 @@ const maintenance = {
       completed:  'badge-success',
       cancelled:  'badge-danger',
     };
+    const label = status ? t(`status_${status}`) : t('placeholder_empty');
     return `<span class="badge ${map[status] || 'badge-secondary'}">
-              ${status || '—'}
+              ${label}
             </span>`;
   },
 
   // ── RENDER TABLE ──
   render() {
     const content = document.getElementById('pageContent');
-    content.innerHTML = `
+    content.innerHTML = translateTemplate(`
 
       <!-- Page Header -->
       <div class="page-header">
-        <h2><i class="fas fa-tools"></i> Maintenance</h2>
+        <h2><i class="fas fa-tools"></i> {{nav_maintenance}}</h2>
         <button class="btn btn-primary" onclick="maintenance.openCreate()">
-          <i class="fas fa-plus"></i> Add Record
+          <i class="fas fa-plus"></i> {{btn_add_maintenance}}
         </button>
       </div>
 
       <!-- Stats Row -->
       <div class="stats-row" style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;">
-        ${this._statCard('fas fa-calendar-check','Scheduled',
+        ${this._statCard('fas fa-calendar-check', t('stat_scheduled'),
             this.data.filter(x=>x.status==='scheduled').length,'#3b82f6')}
-        ${this._statCard('fas fa-spinner','In Progress',
+        ${this._statCard('fas fa-spinner', t('stat_in_progress'),
             this.data.filter(x=>x.status==='in_progress').length,'#f59e0b')}
-        ${this._statCard('fas fa-check-circle','Completed',
+        ${this._statCard('fas fa-check-circle', t('stat_completed'),
             this.data.filter(x=>x.status==='completed').length,'#10b981')}
-        ${this._statCard('fas fa-times-circle','Cancelled',
+        ${this._statCard('fas fa-times-circle', t('stat_cancelled'),
             this.data.filter(x=>x.status==='cancelled').length,'#ef4444')}
       </div>
 
       <!-- Table Wrapper -->
       <div class="table-wrapper">
         <div class="search-bar">
-          <input type="text" id="maintSearch" placeholder="🔍 Search maintenance records..." />
+          <input type="text" id="maintSearch" placeholder="{{ph_search_maintenance}}" />
         </div>
 
         <div id="maintTable">
           ${buildTable(
             [
-              { key: 'maintenance_id', label: 'ID' },
+              { key: 'maintenance_id', label: t('col_id') },
               {
                 key: 'car_id',
-                label: 'Car',
+                label: t('col_car'),
                 render: row => this.carLabel(row.car_id)
               },
-              { key: 'maintenance_type', label: 'Type' },
+              { key: 'maintenance_type', label: t('col_type') },
               {
                 key: 'status',
-                label: 'Status',
+                label: t('col_status'),
                 render: row => this.statusBadge(row.status)
               },
               {
                 key: 'scheduled_date',
-                label: 'Scheduled',
+                label: t('col_scheduled'),
                 render: row =>
                   row.scheduled_date
                     ? new Date(row.scheduled_date).toLocaleDateString()
@@ -100,7 +101,7 @@ const maintenance = {
               },
               {
                 key: 'completion_date',
-                label: 'Completed',
+                label: t('col_completed'),
                 render: row =>
                   row.completion_date
                     ? new Date(row.completion_date).toLocaleDateString()
@@ -108,7 +109,7 @@ const maintenance = {
               },
               {
                 key: 'cost_amount',
-                label: 'Cost',
+                label: t('col_cost'),
                 render: row =>
                   row.cost_amount != null
                     ? `<strong>$${parseFloat(row.cost_amount).toFixed(2)}</strong>`
@@ -116,7 +117,7 @@ const maintenance = {
               },
               {
                 key: 'description',
-                label: 'Notes',
+                label: t('col_notes'),
                 render: row =>
                   row.description
                     ? `<span title="${row.description}">
@@ -131,19 +132,19 @@ const maintenance = {
             row => `
               <button
                 class="btn btn-warning btn-sm"
-                title="Edit"
+                title="${t('btn_edit')}"
                 onclick="maintenance.openEdit(${row.maintenance_id})">
                 <i class="fas fa-edit"></i>
               </button>
               <button
                 class="btn btn-danger btn-sm"
-                title="Delete"
+                title="${t('btn_delete')}"
                 onclick="maintenance.delete(${row.maintenance_id})">
                 <i class="fas fa-trash"></i>
               </button>`
           )}
         </div>
-      </div>`;
+      </div>`);
 
     setupSearch('maintSearch', 'maintTable');
   },
@@ -175,30 +176,30 @@ const maintenance = {
     return `
       <!-- Car -->
       <div class="form-group">
-        <label for="f_maint_car">Car <span style="color:red">*</span></label>
+        <label for="f_maint_car">{{label_car}} <span style="color:red">*</span></label>
         <select id="f_maint_car">
-          <option value="">— Select a car —</option>
+          <option value="">{{placeholder_select_car}}</option>
           ${carOptions}
         </select>
       </div>
 
       <!-- Type -->
       <div class="form-group">
-        <label for="f_maint_type">Maintenance Type <span style="color:red">*</span></label>
+        <label for="f_maint_type">{{label_maintenance_type}} <span style="color:red">*</span></label>
         <input
           id="f_maint_type"
           type="text"
-          placeholder="e.g. Oil Change, Tire Rotation, Brake Repair"
+          placeholder="{{ph_maintenance_type}}"
           value="${d.maintenance_type || ''}"
         />
       </div>
 
       <!-- Status -->
       <div class="form-group">
-        <label for="f_maint_status">Status <span style="color:red">*</span></label>
+        <label for="f_maint_status">{{label_status}} <span style="color:red">*</span></label>
         <select id="f_maint_status">
           ${statuses.map(s =>
-            `<option value="${s}" ${d.status === s ? 'selected' : ''}>${s}</option>`
+            `<option value="${s}" ${d.status === s ? 'selected' : ''}>${t(`status_${s}`)}</option>`
           ).join('')}
         </select>
       </div>
@@ -206,7 +207,7 @@ const maintenance = {
       <!-- Dates Row -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
         <div class="form-group">
-          <label for="f_maint_sched">Scheduled Date</label>
+          <label for="f_maint_sched">{{label_scheduled}}</label>
           <input
             id="f_maint_sched"
             type="date"
@@ -214,7 +215,7 @@ const maintenance = {
           />
         </div>
         <div class="form-group">
-          <label for="f_maint_comp">Completion Date</label>
+          <label for="f_maint_comp">{{label_completed}}</label>
           <input
             id="f_maint_comp"
             type="date"
@@ -225,24 +226,24 @@ const maintenance = {
 
       <!-- Cost -->
       <div class="form-group">
-        <label for="f_maint_cost">Cost ($)</label>
+        <label for="f_maint_cost">{{label_cost}}</label>
         <input
           id="f_maint_cost"
           type="number"
           step="0.01"
           min="0"
-          placeholder="e.g. 150.00"
+          placeholder="{{ph_cost}}"
           value="${d.cost_amount != null ? d.cost_amount : ''}"
         />
       </div>
 
       <!-- Description -->
       <div class="form-group">
-        <label for="f_maint_desc">Notes / Description</label>
+        <label for="f_maint_desc">{{label_notes}}</label>
         <textarea
           id="f_maint_desc"
           rows="3"
-          placeholder="Additional notes about this maintenance..."
+          placeholder="{{ph_notes}}"
         >${d.description || ''}</textarea>
       </div>`;
   },
@@ -258,10 +259,10 @@ const maintenance = {
     const description      = document.getElementById('f_maint_desc').value.trim();
 
     if (!car_id) {
-      showToast('Please select a car ⚠️', 'error'); return null;
+      showToast(t('error_select_car'), 'error'); return null;
     }
     if (!maintenance_type) {
-      showToast('Maintenance type is required ⚠️', 'error'); return null;
+      showToast(t('error_maintenance_type_required'), 'error'); return null;
     }
 
     return {
@@ -278,14 +279,14 @@ const maintenance = {
   // ── OPEN CREATE ──
   openCreate() {
     openModal(
-      '➕ Add Maintenance Record',
+      t('modal_add_maintenance'),
       this.formHTML(),
       async () => {
         const data = this.getFormData();
         if (!data) return;
         try {
           await api.post('/maintenance/', data);
-          showToast('Maintenance record created ✅', 'success');
+          showToast(t('toast_maintenance_created'), 'success');
           closeModal();
           this.load();
         } catch (e) {
@@ -298,17 +299,17 @@ const maintenance = {
   // ── OPEN EDIT ──
   openEdit(id) {
     const d = this.data.find(x => x.maintenance_id === id);
-    if (!d) { showToast('Record not found ⚠️', 'error'); return; }
+    if (!d) { showToast(t('error_maintenance_not_found'), 'error'); return; }
 
     openModal(
-      '✏️ Edit Maintenance Record',
+      t('modal_edit_maintenance'),
       this.formHTML(d),
       async () => {
         const data = this.getFormData();
         if (!data) return;
         try {
           await api.put(`/maintenance/${id}`, data);
-          showToast('Maintenance record updated ✅', 'success');
+          showToast(t('toast_maintenance_updated'), 'success');
           closeModal();
           this.load();
         } catch (e) {
@@ -321,11 +322,11 @@ const maintenance = {
   // ── DELETE ──
   delete(id) {
     confirmDelete(
-      `Delete maintenance record #${id}? This action cannot be undone.`,
+      t('confirm_delete_maintenance', { id }),
       async () => {
         try {
           await api.delete(`/maintenance/${id}`);
-          showToast('Record deleted 🗑️', 'info');
+          showToast(t('toast_maintenance_deleted'), 'info');
           this.load();
         } catch (e) {
           showToast(e.message, 'error');

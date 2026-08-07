@@ -2,8 +2,9 @@ const reservations = {
   data: [], customers: [], cars: [],
 
   async load() {
-    document.getElementById('pageContent').innerHTML =
-      `<div class="loading"><div class="spinner"></div> Loading...</div>`;
+    document.getElementById('pageContent').innerHTML = translateTemplate(
+      `<div class="loading"><div class="spinner"></div> {{loading}}</div>`
+    );
     try {
       [this.data, this.customers, this.cars] = await Promise.all([
         api.get('/reservations/'),
@@ -27,42 +28,42 @@ const reservations = {
   },
 
   render() {
-    document.getElementById('pageContent').innerHTML = `
+    document.getElementById('pageContent').innerHTML = translateTemplate(`
       <div class="page-header">
-        <h2><i class="fas fa-calendar-check"></i> Reservations</h2>
+        <h2><i class="fas fa-calendar-check"></i> {{nav_reservations}}</h2>
         <button class="btn btn-primary" onclick="reservations.openCreate()">
-          <i class="fas fa-plus"></i> Add Reservation
+          <i class="fas fa-plus"></i> {{btn_add_reservation}}
         </button>
       </div>
       <div class="table-wrapper">
         <div class="search-bar">
-          <input type="text" id="resSearch" placeholder="🔍 Search..."/>
+          <input type="text" id="resSearch" placeholder="{{ph_search_reservations}}"/>
         </div>
         <div id="resTable">
           ${buildTable([
-            { key: 'reservation_id', label: 'ID' },
-            { key: 'customer_id',    label: 'Customer', render: r => {
+            { key: 'reservation_id', label: t('col_id') },
+            { key: 'customer_id',    label: t('col_customer'), render: r => {
               const c = this.customers.find(x => x.customer_id === r.customer_id);
               return c ? `${c.full_name}` : r.customer_id;
             }},
-            { key: 'car_id', label: 'Car', render: r => {
+            { key: 'car_id', label: t('col_car'), render: r => {
               const c = this.cars.find(x => x.car_id === r.car_id);
               return c ? `${c.make} ${c.model}` : r.car_id;
             }},
-            { key: 'pickup_at',  label: 'Start' },
-            { key: 'dropoff_at',    label: 'End' },
-            { key: 'status',      label: 'Status', render: r => statusBadge(r.status) },
-            { key: 'total_amount',label: 'Total',  render: r => `$${r.total_amount || 0}` },
+            { key: 'pickup_at',  label: t('col_start') },
+            { key: 'dropoff_at',    label: t('col_end') },
+            { key: 'status',      label: t('col_status'), render: r => statusBadge(r.status) },
+            { key: 'total_amount',label: t('col_total'),  render: r => `$${r.total_amount || 0}` },
           ], this.data, row => `
-            <button class="btn btn-warning btn-sm" onclick="reservations.openEdit(${row.reservation_id})">
+            <button class="btn btn-warning btn-sm" title="${t('btn_edit')}" onclick="reservations.openEdit(${row.reservation_id})">
               <i class="fas fa-edit"></i>
             </button>
-            <button class="btn btn-danger btn-sm" onclick="reservations.delete(${row.reservation_id})">
+            <button class="btn btn-danger btn-sm" title="${t('btn_delete')}" onclick="reservations.delete(${row.reservation_id})">
               <i class="fas fa-trash"></i>
             </button>`
           )}
         </div>
-      </div>`;
+      </div>`);
     setupSearch('resSearch', 'resTable');
   },
 
@@ -76,47 +77,47 @@ const reservations = {
         ${c.make} ${c.model} (${c.license_plate})
       </option>`).join('');
 
-    return `
-      <div class="form-group"><label>Customer *</label>
+    return translateTemplate(`
+      <div class="form-group"><label>{{label_customer}} <span style="color:red">*</span></label>
         <select id="f_customer_id">
-          <option value="">-- Select --</option>${custOpts}
+          <option value="">{{placeholder_select_customer}}</option>${custOpts}
         </select>
       </div>
-      <div class="form-group"><label>Car *</label>
+      <div class="form-group"><label>{{label_car}} <span style="color:red">*</span></label>
         <select id="f_car_id">
-          <option value="">-- Select --</option>${carOpts}
+          <option value="">{{placeholder_select_car}}</option>${carOpts}
         </select>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>📅 Pickup Date & Time *</label>
+          <label>📅 {{label_pickup_datetime}} <span style="color:red">*</span></label>
           <input id="f_pickup_at"
                  type="datetime-local"
                  value="${this.toInputValue(d.pickup_at)}"/>
         </div>
         <div class="form-group">
-          <label>📅 Dropoff Date & Time *</label>
+          <label>📅 {{label_dropoff_datetime}} <span style="color:red">*</span></label>
           <input id="f_dropoff_at"
                  type="datetime-local"
                  value="${this.toInputValue(d.dropoff_at)}"/>
         </div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Status</label>
+        <div class="form-group"><label>{{label_status}}</label>
           <select id="f_status">
             ${['pending','confirmed','cancelled','completed'].map(s =>
-              `<option value="${s}" ${d.status === s ? 'selected' : ''}>${s}</option>`
+              `<option value="${s}" ${d.status === s ? 'selected' : ''}>${t(`status_${s}`)}</option>`
             ).join('')}
           </select>
         </div>
-        <div class="form-group"><label>Total Amount</label>
+        <div class="form-group"><label>{{label_total_amount}}</label>
           <input id="f_total_amount" type="number" step="0.01"
                  value="${d.total_amount || ''}"/>
         </div>
       </div>
-      <div class="form-group"><label>Notes</label>
+      <div class="form-group"><label>{{label_notes}}</label>
         <textarea id="f_notes" rows="2">${d.notes || ''}</textarea>
-      </div>`;
+      </div>`);
   },
 
   getFormData() {
@@ -136,10 +137,10 @@ const reservations = {
   },
 
   openCreate() {
-    openModal('➕ Add Reservation', this.formHTML(), async () => {
+    openModal(t('modal_add_reservation'), this.formHTML(), async () => {
       try {
         await api.post('/reservations/', this.getFormData());
-        showToast('Reservation created ✅', 'success');
+        showToast(t('toast_reservation_created'), 'success');
         closeModal(); this.load();
       } catch (e) { showToast(e.message, 'error'); }
     });
@@ -147,20 +148,20 @@ const reservations = {
 
   openEdit(id) {
     const d = this.data.find(x => x.reservation_id === id);
-    openModal('✏️ Edit Reservation', this.formHTML(d), async () => {
+    openModal(t('modal_edit_reservation'), this.formHTML(d), async () => {
       try {
         await api.put(`/reservations/${id}`, this.getFormData());
-        showToast('Reservation updated ✅', 'success');
+        showToast(t('toast_reservation_updated'), 'success');
         closeModal(); this.load();
       } catch (e) { showToast(e.message, 'error'); }
     });
   },
 
   delete(id) {
-    confirmDelete('Delete this reservation?', async () => {
+    confirmDelete(t('confirm_delete_reservation'), async () => {
       try {
         await api.delete(`/reservations/${id}`);
-        showToast('Deleted 🗑️', 'info'); this.load();
+        showToast(t('toast_reservation_deleted'), 'info'); this.load();
       } catch (e) { showToast(e.message, 'error'); }
     });
   }

@@ -6,10 +6,10 @@ const customers = {
   // ─────────────────────────────────────────────
   async load() {
     const content = document.getElementById('pageContent');
-    content.innerHTML = `
+    content.innerHTML = translateTemplate(`
       <div class="loading">
-        <div class="spinner"></div> Loading Customers...
-      </div>`;
+        <div class="spinner"></div> {{loading_customers}}
+      </div>`);
 
     try {
       this.data = await api.get('/customers/');
@@ -88,23 +88,23 @@ const customers = {
     const content = document.getElementById('pageContent');
     const { total, expired, expiringSoon } = this._counts();
 
-    content.innerHTML = `
+    content.innerHTML = translateTemplate(`
 
       <!-- ── Page Header ── -->
       <div class="page-header">
-        <h2><i class="fas fa-users"></i> Customers</h2>
+        <h2><i class="fas fa-users"></i> {{nav_customers}}</h2>
         <button class="btn btn-primary" onclick="customers.openCreate()">
-          <i class="fas fa-plus"></i> Add Customer
+          <i class="fas fa-plus"></i> {{btn_add_customer}}
         </button>
       </div>
 
       <!-- ── Stats Row ── -->
       <div style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;">
-        ${this._statCard('fas fa-users',              'Total Customers', total,        '#6366f1')}
-        ${this._statCard('fas fa-id-card',            'Valid Licenses',
+        ${this._statCard('fas fa-users',              t('stat_total_customers'), total,        '#6366f1')}
+        ${this._statCard('fas fa-id-card',            t('stat_valid_licenses'),
             total - expired - expiringSoon, '#10b981')}
-        ${this._statCard('fas fa-exclamation-triangle','Expiring Soon',  expiringSoon, '#f59e0b')}
-        ${this._statCard('fas fa-times-circle',       'Expired',         expired,      '#ef4444')}
+        ${this._statCard('fas fa-exclamation-triangle',t('stat_expiring_soon'),  expiringSoon, '#f59e0b')}
+        ${this._statCard('fas fa-times-circle',       t('stat_expired'),         expired,      '#ef4444')}
       </div>
 
       <!-- ── Table Wrapper ── -->
@@ -115,7 +115,7 @@ const customers = {
           <input
             type="text"
             id="customerSearch"
-            placeholder="🔍 Search by name, email, phone or license..."
+            placeholder="{{ph_search_customers}}"
           />
         </div>
 
@@ -129,7 +129,7 @@ const customers = {
               // Full Name with avatar
               {
                 key: 'full_name',
-                label: 'Customer',
+                label: t('col_customer'),
                 render: row => `
                   <div style="display:flex;align-items:center;gap:.7rem;">
                     <div style="
@@ -146,7 +146,7 @@ const customers = {
               // Email
               {
                 key: 'email',
-                label: 'Email',
+                label: t('col_email'),
                 render: row =>
                   row.email
                     ? `<a href="mailto:${row.email}"
@@ -159,7 +159,7 @@ const customers = {
               // Phone
               {
                 key: 'phone',
-                label: 'Phone',
+                label: t('col_phone'),
                 render: row =>
                   row.phone
                     ? `<a href="tel:${row.phone}"
@@ -173,7 +173,7 @@ const customers = {
               // License Number
               {
                 key: 'license_no',
-                label: 'License No.',
+                label: t('col_license_no'),
                 render: row =>
                   row.license_no
                     ? `<code style="
@@ -187,14 +187,14 @@ const customers = {
               // License Expiry with color badge
               {
                 key: 'license_exp',
-                label: 'License Expiry',
+                label: t('col_license_expiry'),
                 render: row => this._licenceBadge(row.license_exp)
               },
 
               // Member Since
               {
                 key: 'created_at',
-                label: 'Member Since',
+                label: t('col_member_since'),
                 render: row =>
                   row.created_at
                     ? new Date(row.created_at).toLocaleDateString()
@@ -208,19 +208,19 @@ const customers = {
             row => `
               <button
                 class="btn btn-warning btn-sm"
-                title="Edit customer"
+                title="${t('btn_edit')}"
                 onclick="customers.openEdit(${row.customer_id})">
                 <i class="fas fa-edit"></i>
               </button>
               <button
                 class="btn btn-danger btn-sm"
-                title="Delete customer"
+                title="${t('btn_delete')}"
                 onclick="customers.delete(${row.customer_id})">
                 <i class="fas fa-trash"></i>
               </button>`
           )}
         </div>
-      </div>`;
+      </div>`);
 
     setupSearch('customerSearch', 'customerTable');
   },
@@ -257,38 +257,38 @@ const customers = {
       <!-- Full Name -->
       <div class="form-group">
         <label for="f_cust_name">
-          Full Name <span style="color:red">*</span>
+          {{label_full_name}} <span style="color:red">*</span>
         </label>
         <input
           id="f_cust_name"
           type="text"
-          placeholder="e.g. Jane Smith"
+          placeholder="{{ph_full_name}}"
           maxlength="160"
           value="${d.full_name || ''}"
         />
-        <small style="color:#64748b;">Max 160 characters</small>
+        <small style="color:#64748b;">{{hint_max_chars}}</small>
       </div>
 
       <!-- Email & Phone -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
 
         <div class="form-group">
-          <label for="f_cust_email">Email</label>
+          <label for="f_cust_email">{{label_email}}</label>
           <input
             id="f_cust_email"
             type="email"
-            placeholder="jane@example.com"
+            placeholder="{{ph_email}}"
             maxlength="255"
             value="${d.email || ''}"
           />
         </div>
 
         <div class="form-group">
-          <label for="f_cust_phone">Phone</label>
+          <label for="f_cust_phone">${t('label_phone')}</label>
           <input
             id="f_cust_phone"
             type="tel"
-            placeholder="+1 555 000 0000"
+            placeholder="${t('ph_phone')}"
             maxlength="30"
             value="${d.phone || ''}"
           />
@@ -300,18 +300,18 @@ const customers = {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
 
         <div class="form-group">
-          <label for="f_cust_license_no">Driver's License No.</label>
+          <label for="f_cust_license_no">${t('label_driver_license')}</label>
           <input
             id="f_cust_license_no"
             type="text"
-            placeholder="e.g. DL-1234567"
+            placeholder="${t('ph_driver_license')}"
             maxlength="60"
             value="${d.license_no || ''}"
           />
         </div>
 
         <div class="form-group">
-          <label for="f_cust_license_exp">License Expiry Date</label>
+          <label for="f_cust_license_exp">${t('label_license_expiry_date')}</label>
           <input
             id="f_cust_license_exp"
             type="date"
@@ -322,8 +322,8 @@ const customers = {
               new Date(d.license_exp) < new Date() ? '#ef4444' : '#10b981'
             };">
               ${new Date(d.license_exp) < new Date()
-                ? '⚠️ This license has expired'
-                : '✔ License is valid'}
+                ? t('hint_license_expired')
+                : t('hint_license_valid')}
             </small>` : ''}
         </div>
 
@@ -342,19 +342,19 @@ const customers = {
 
     // ── Validation ──
     if (!full_name) {
-      showToast('Full name is required ⚠️', 'error');
+      showToast(t('error_full_name_required'), 'error');
       return null;
     }
     if (full_name.length > 160) {
-      showToast('Full name must be 160 characters or less ⚠️', 'error');
+      showToast(t('error_full_name_length'), 'error');
       return null;
     }
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      showToast('Please enter a valid email address ⚠️', 'error');
+      showToast(t('error_invalid_email'), 'error');
       return null;
     }
     if (license_no && !license_exp) {
-      showToast('Please provide the license expiry date ⚠️', 'error');
+      showToast(t('error_license_expiry_required'), 'error');
       return null;
     }
 
@@ -372,14 +372,14 @@ const customers = {
   // ─────────────────────────────────────────────
   openCreate() {
     openModal(
-      '➕ Add Customer',
+      t('modal_add_customer'),
       this.formHTML(),
       async () => {
         const data = this.getFormData();
         if (!data) return;
         try {
           await api.post('/customers/', data);
-          showToast('Customer created ✅', 'success');
+          showToast(t('toast_customer_created'), 'success');
           closeModal();
           this.load();
         } catch (e) {
@@ -394,17 +394,17 @@ const customers = {
   // ─────────────────────────────────────────────
   openEdit(id) {
     const d = this.data.find(x => x.customer_id === id);
-    if (!d) { showToast('Customer not found ⚠️', 'error'); return; }
+    if (!d) { showToast(t('error_customer_not_found'), 'error'); return; }
 
     openModal(
-      '✏️ Edit Customer',
+      t('modal_edit_customer'),
       this.formHTML(d),
       async () => {
         const data = this.getFormData();
         if (!data) return;
         try {
           await api.put(`/customers/${id}`, data);
-          showToast('Customer updated ✅', 'success');
+          showToast(t('toast_customer_updated'), 'success');
           closeModal();
           this.load();
         } catch (e) {
@@ -422,12 +422,11 @@ const customers = {
     const name = d ? `"${d.full_name}"` : `#${id}`;
 
     confirmDelete(
-      `Delete customer ${name}?
-       This may also affect their reservations and rental history.`,
+      t('confirm_delete_customer', { name }),
       async () => {
         try {
           await api.delete(`/customers/${id}`);
-          showToast('Customer deleted 🗑️', 'info');
+          showToast(t('toast_customer_deleted'), 'info');
           this.load();
         } catch (e) {
           showToast(e.message, 'error');

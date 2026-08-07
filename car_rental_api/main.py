@@ -14,7 +14,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Car Rental API", version="1.0.0")
 
-# ✅ Serve static files
+# ✅ Serve static files (locales/ is inside static/)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # ✅ Serve dashboard at root

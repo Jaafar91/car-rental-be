@@ -3,7 +3,7 @@ const branches = {
 
   async load() {
     const content = document.getElementById('pageContent');
-    content.innerHTML = `<div class="loading"><div class="spinner"></div> Loading...</div>`;
+    content.innerHTML = translateTemplate(`<div class="loading"><div class="spinner"></div> {{loading}}</div>`);
     try {
       this.data = await api.get('/branches/');
       this.render();
@@ -14,71 +14,72 @@ const branches = {
 
   render() {
     const content = document.getElementById('pageContent');
-    content.innerHTML = `
+    content.innerHTML = translateTemplate(`
       <div class="page-header">
-        <h2><i class="fas fa-code-branch"></i> Branches</h2>
+        <h2><i class="fas fa-code-branch"></i> {{nav_branches}}</h2>
         <button class="btn btn-primary" onclick="branches.openCreate()">
-          <i class="fas fa-plus"></i> Add Branch
+          <i class="fas fa-plus"></i> {{btn_add_branch}}
         </button>
       </div>
       <div class="table-wrapper">
         <div class="search-bar">
-          <input type="text" id="branchSearch" placeholder="🔍 Search branches..."/>
+          <input type="text" id="branchSearch" placeholder="{{ph_search_branches}}"/>
         </div>
         <div id="branchTable">
           ${buildTable(
             [
-              { key: 'branch_id',   label: 'ID' },
-              { key: 'branch_name', label: 'Name' },
-              { key: 'address',     label: 'Address' },
-              { key: 'city',        label: 'City' },
-              { key: 'phone',       label: 'Phone' },
-              { key: 'email',       label: 'Email' },
+              { key: 'branch_id',   label: t('col_id') },
+              { key: 'branch_name', label: t('label_branch_name') },
+              { key: 'address',     label: t('label_address') },
+              { key: 'city',        label: t('label_city') },
+              { key: 'phone',       label: t('label_phone') },
+              { key: 'email',       label: t('label_email') },
             ],
             this.data,
             row => `
-              <button class="btn btn-warning btn-sm" onclick="branches.openEdit(${row.branch_id})">
+              <button class="btn btn-warning btn-sm" onclick="branches.openEdit(${row.branch_id})" title="${t('btn_edit')}">
                 <i class="fas fa-edit"></i>
               </button>
-              <button class="btn btn-danger btn-sm" onclick="branches.delete(${row.branch_id})">
+              <button class="btn btn-danger btn-sm" onclick="branches.delete(${row.branch_id})" title="${t('btn_delete')}">
                 <i class="fas fa-trash"></i>
               </button>`
           )}
         </div>
-      </div>`;
+      </div>`);
     setupSearch('branchSearch', 'branchTable');
+    translateDOM(content);
   },
 
   formHTML(d = {}) {
-    return `
+    return translateTemplate(`
       <div class="form-group">
-        <label>Branch Name *</label>
-        <input id="f_branch_name" value="${d.branch_name || ''}" placeholder="Main Branch"/>
+        <label data-i18n="label_branch_name">Branch Name *</label>
+        <input id="f_branch_name" value="${d.branch_name || ''}" data-i18n-placeholder="ph_branch_name" placeholder="Main Branch"/>
       </div>
       <div class="form-group">
-        <label>Address</label>
-        <input id="f_address" value="${d.address || ''}" placeholder="123 Main St"/>
+        <label data-i18n="label_address">Address</label>
+        <input id="f_address" value="${d.address || ''}" data-i18n-placeholder="ph_address" placeholder="123 Main St"/>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>City</label>
-          <input id="f_city" value="${d.city || ''}" placeholder="Cairo"/>
+          <label data-i18n="label_city">City</label>
+          <input id="f_city" value="${d.city || ''}" data-i18n-placeholder="ph_city" placeholder="Cairo"/>
         </div>
         <div class="form-group">
-          <label>State</label>
-          <input id="f_state" value="${d.state || ''}" placeholder="Cairo"/>
+          <label data-i18n="label_state">State</label>
+          <input id="f_state" value="${d.state || ''}" data-i18n-placeholder="ph_state" placeholder="Cairo"/>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>Phone</label>
-          <input id="f_phone" value="${d.phone || ''}" placeholder="+20..."/>
+          <label data-i18n="label_phone">Phone</label>
+          <input id="f_phone" value="${d.phone || ''}" data-i18n-placeholder="ph_phone" placeholder="+20..."/>
         </div>
         <div class="form-group">
-          <label>Email</label>
-          <input id="f_email" value="${d.email || ''}" placeholder="branch@example.com"/>
+          <label data-i18n="label_email">Email</label>
+          <input id="f_email" value="${d.email || ''}" data-i18n-placeholder="ph_email" placeholder="branch@example.com"/>
         </div>
-      </div>`;
+      </div>`);
   },
 
   getFormData() {
@@ -93,10 +94,10 @@ const branches = {
   },
 
   openCreate() {
-    openModal('➕ Add Branch', this.formHTML(), async () => {
+    openModal(t('modal_add_branch'), this.formHTML(), async () => {
       try {
         await api.post('/branches/', this.getFormData());
-        showToast('Branch created ✅', 'success');
+        showToast(t('toast_branch_created'), 'success');
         closeModal();
         this.load();
       } catch (e) { showToast(e.message, 'error'); }
@@ -105,10 +106,10 @@ const branches = {
 
   openEdit(id) {
     const d = this.data.find(x => x.branch_id === id);
-    openModal('✏️ Edit Branch', this.formHTML(d), async () => {
+    openModal(t('modal_edit_branch'), this.formHTML(d), async () => {
       try {
         await api.put(`/branches/${id}`, this.getFormData());
-        showToast('Branch updated ✅', 'success');
+        showToast(t('toast_branch_updated'), 'success');
         closeModal();
         this.load();
       } catch (e) { showToast(e.message, 'error'); }
@@ -116,10 +117,10 @@ const branches = {
   },
 
   delete(id) {
-    confirmDelete('Delete this branch?', async () => {
+    confirmDelete(t('confirm_delete_branch'), async () => {
       try {
         await api.delete(`/branches/${id}`);
-        showToast('Branch deleted 🗑️', 'info');
+        showToast(t('toast_branch_deleted'), 'info');
         this.load();
       } catch (e) { showToast(e.message, 'error'); }
     });

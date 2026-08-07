@@ -13,41 +13,41 @@
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <i class="fas fa-car"></i>
-      <span>Car Rental Admin</span>
+      <span data-i18n="appTitle">Car Rental Admin</span>
     </div>
     <nav class="sidebar-nav">
       <a href="#" class="nav-item active" data-page="dashboard">
-        <i class="fas fa-tachometer-alt"></i> Dashboard
+        <i class="fas fa-tachometer-alt"></i> <span data-i18n="nav_dashboard">Dashboard</span>
       </a>
       <a href="#" class="nav-item" data-page="branches">
-        <i class="fas fa-code-branch"></i> Branches
+        <i class="fas fa-code-branch"></i> <span data-i18n="nav_branches">Branches</span>
       </a>
       <a href="#" class="nav-item" data-page="car_categories">
-        <i class="fas fa-tags"></i> Car Categories
+        <i class="fas fa-tags"></i> <span data-i18n="nav_car_categories">Car Categories</span>
       </a>
       <a href="#" class="nav-item" data-page="car_status">
-        <i class="fas fa-traffic-light"></i> Car Status
+        <i class="fas fa-traffic-light"></i> <span data-i18n="nav_car_status">Car Status</span>
       </a>
       <a href="#" class="nav-item" data-page="cars">
-        <i class="fas fa-car-side"></i> Cars
+        <i class="fas fa-car-side"></i> <span data-i18n="nav_cars">Cars</span>
       </a>
       <a href="#" class="nav-item" data-page="customers">
-        <i class="fas fa-users"></i> Customers
+        <i class="fas fa-users"></i> <span data-i18n="nav_customers">Customers</span>
       </a>
       <a href="#" class="nav-item" data-page="staff">
-        <i class="fas fa-user-tie"></i> Staff
+        <i class="fas fa-user-tie"></i> <span data-i18n="nav_staff">Staff</span>
       </a>
       <a href="#" class="nav-item" data-page="reservations">
-        <i class="fas fa-calendar-check"></i> Reservations
+        <i class="fas fa-calendar-check"></i> <span data-i18n="nav_reservations">Reservations</span>
       </a>
       <a href="#" class="nav-item" data-page="rentals">
-        <i class="fas fa-key"></i> Rentals
+        <i class="fas fa-key"></i> <span data-i18n="nav_rentals">Rentals</span>
       </a>
       <a href="#" class="nav-item" data-page="payments">
-        <i class="fas fa-credit-card"></i> Payments
+        <i class="fas fa-credit-card"></i> <span data-i18n="nav_payments">Payments</span>
       </a>
       <a href="#" class="nav-item" data-page="maintenance">
-        <i class="fas fa-wrench"></i> Maintenance
+        <i class="fas fa-wrench"></i> <span data-i18n="nav_maintenance">Maintenance</span>
       </a>
     </nav>
   </aside>
@@ -62,9 +62,13 @@
       </button>
       <h1 class="page-title" id="pageTitle">Dashboard</h1>
       <div class="topbar-right">
-        <span class="badge-api" id="apiStatus">
+        <span class="badge-api" id="apiStatus" data-i18n="apiConnected">
           <i class="fas fa-circle"></i> API Connected
         </span>
+        <select id="langSelect" class="lang-select" aria-label="Language">
+          <option value="en">English</option>
+          <option value="fr" selected>Français</option>
+        </select>
       </div>
     </header>
 
@@ -89,8 +93,8 @@
         <!-- Dynamic form -->
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" id="modalCancel">Cancel</button>
-        <button class="btn btn-primary" id="modalSubmit">Save</button>
+        <button class="btn btn-secondary" id="modalCancel" data-i18n="btn_cancel">Cancel</button>
+        <button class="btn btn-primary" id="modalSubmit" data-i18n="btn_save">Save</button>
       </div>
     </div>
   </div>

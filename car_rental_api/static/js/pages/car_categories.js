@@ -4,20 +4,22 @@ const car_categories = {
   // ── LOAD ──
   async load() {
     const content = document.getElementById('pageContent');
-    content.innerHTML = `
+    content.innerHTML = translateTemplate(`
       <div class="loading">
-        <div class="spinner"></div> Loading Car Categories...
-      </div>`;
+        <div class="spinner"></div> {{loading_car_categories}}
+      </div>`);
 
     try {
       this.data = await api.get('/car-categories/');
       this.render();
     } catch (e) {
-      content.innerHTML = `
+      content.innerHTML = translateTemplate(`
         <div class="empty-state">
           <i class="fas fa-exclamation-triangle"></i>
-          <p>${e.message}</p>
-        </div>`;
+          <p>{{error_loading_categories}}</p>
+        </div>`);
+      const errorParagraph = document.querySelector('#pageContent p');
+      if (errorParagraph) errorParagraph.textContent = e.message;
       showToast(e.message, 'error');
     }
   },
@@ -25,13 +27,13 @@ const car_categories = {
   // ── RENDER TABLE ──
   render() {
     const content = document.getElementById('pageContent');
-    content.innerHTML = `
+    content.innerHTML = translateTemplate(`
 
       <!-- Page Header -->
       <div class="page-header">
-        <h2><i class="fas fa-tags"></i> Car Categories</h2>
+        <h2><i class="fas fa-tags"></i> {{nav_car_categories}}</h2>
         <button class="btn btn-primary" onclick="car_categories.openCreate()">
-          <i class="fas fa-plus"></i> Add Category
+          <i class="fas fa-plus"></i> {{btn_add_category}}
         </button>
       </div>
 
@@ -43,7 +45,7 @@ const car_categories = {
           <input
             type="text"
             id="catSearch"
-            placeholder="🔍 Search categories..."
+            placeholder="{{ph_search_categories}}"
           />
         </div>
 
@@ -51,53 +53,37 @@ const car_categories = {
         <div id="catTable">
           ${buildTable(
             [
+              { key: 'category_id', label: t('col_id') },
+              { key: 'category_name', label: t('col_category_name') },
               {
-                key:   'category_id',
-                label: 'ID'
-              },
-              {
-                key:   'category_name',
-                label: 'Category Name'
-              },
-              {
-                key:   'description',
-                label: 'Description',
+                key: 'description',
+                label: t('col_description'),
                 render: row =>
                   row.description
-                    ? `<span title="${row.description}">
-                         ${row.description.length > 50
-                           ? row.description.substring(0, 50) + '…'
-                           : row.description}
-                       </span>`
-                    : '<span style="color:#94a3b8">—</span>'
+                    ? `<span title="${row.description}">${row.description.length > 50 ? row.description.substring(0, 50) + '…' : row.description}</span>`
+                    : `<span style="color:#94a3b8">${t('placeholder_empty')}</span>`
               },
               {
-                key:   'daily_rate',
-                label: 'Base Daily Rate',
+                key: 'daily_rate',
+                label: t('col_daily_rate'),
                 render: row =>
                   row.daily_rate != null
                     ? `<strong>$${parseFloat(row.daily_rate).toFixed(2)}</strong>`
-                    : '<span style="color:#94a3b8">—</span>'
+                    : `<span style="color:#94a3b8">${t('placeholder_empty')}</span>`
               },
             ],
             this.data,
             row => `
-              <button
-                class="btn btn-warning btn-sm"
-                title="Edit"
-                onclick="car_categories.openEdit(${row.category_id})">
+              <button class="btn btn-warning btn-sm" title="${t('btn_edit')}" onclick="car_categories.openEdit(${row.category_id})">
                 <i class="fas fa-edit"></i>
               </button>
-              <button
-                class="btn btn-danger btn-sm"
-                title="Delete"
-                onclick="car_categories.delete(${row.category_id})">
+              <button class="btn btn-danger btn-sm" title="${t('btn_delete')}" onclick="car_categories.delete(${row.category_id})">
                 <i class="fas fa-trash"></i>
               </button>`
           )}
         </div>
 
-      </div>`;
+      </div>`);
 
     // Activate live search
     setupSearch('catSearch', 'catTable');
@@ -105,42 +91,40 @@ const car_categories = {
 
   // ── FORM HTML ──
   formHTML(d = {}) {
-    return `
+    return translateTemplate(`
       <!-- Category Name -->
       <div class="form-group">
-        <label for="f_category_name">
-          Category Name <span style="color:red">*</span>
-        </label>
+        <label for="f_category_name">{{label_category_name}} <span style="color:red">*</span></label>
         <input
           id="f_category_name"
           type="text"
-          placeholder="e.g. Economy, SUV, Luxury"
+          placeholder="{{ph_category_name}}"
           value="${d.category_name || ''}"
         />
       </div>
 
       <!-- Description -->
       <div class="form-group">
-        <label for="f_description">Description</label>
+        <label for="f_description">{{label_description}}</label>
         <textarea
           id="f_description"
           rows="3"
-          placeholder="Brief description of this category..."
+          placeholder="{{ph_category_description}}"
         >${d.description || ''}</textarea>
       </div>
 
       <!-- Daily Rate -->
       <div class="form-group">
-        <label for="f_daily_rate">Base Daily Rate ($)</label>
+        <label for="f_daily_rate">{{label_daily_rate}}</label>
         <input
           id="f_daily_rate"
           type="number"
           step="0.01"
           min="0"
-          placeholder="e.g. 49.99"
+          placeholder="{{ph_daily_rate}}"
           value="${d.daily_rate != null ? d.daily_rate : ''}"
         />
-      </div>`;
+      </div>`);
   },
 
   // ── COLLECT FORM DATA ──
@@ -149,9 +133,8 @@ const car_categories = {
     const description   = document.getElementById('f_description').value.trim();
     const daily_rate    = document.getElementById('f_daily_rate').value;
 
-    // Basic validation
     if (!category_name) {
-      showToast('Category name is required ⚠️', 'error');
+      showToast(t('error_category_name_required'), 'error');
       return null;
     }
 
@@ -165,15 +148,15 @@ const car_categories = {
   // ── OPEN CREATE MODAL ──
   openCreate() {
     openModal(
-      '➕ Add Car Category',
+      t('modal_add_category'),
       this.formHTML(),
       async () => {
         const data = this.getFormData();
-        if (!data) return;           // validation failed
+        if (!data) return;
 
         try {
           await api.post('/car-categories/', data);
-          showToast('Category created ✅', 'success');
+          showToast(t('toast_category_created'), 'success');
           closeModal();
           this.load();
         } catch (e) {
@@ -187,20 +170,20 @@ const car_categories = {
   openEdit(id) {
     const d = this.data.find(x => x.category_id === id);
     if (!d) {
-      showToast('Category not found ⚠️', 'error');
+      showToast(t('error_category_not_found'), 'error');
       return;
     }
 
     openModal(
-      '✏️ Edit Car Category',
+      t('modal_edit_category'),
       this.formHTML(d),
       async () => {
         const data = this.getFormData();
-        if (!data) return;           // validation failed
+        if (!data) return;
 
         try {
           await api.put(`/car-categories/${id}`, data);
-          showToast('Category updated ✅', 'success');
+          showToast(t('toast_category_updated'), 'success');
           closeModal();
           this.load();
         } catch (e) {
@@ -213,14 +196,14 @@ const car_categories = {
   // ── DELETE ──
   delete(id) {
     const d = this.data.find(x => x.category_id === id);
-    const name = d ? `"${d.category_name}"` : `#${id}`;
+    const name = d ? `${d.category_name}` : `#${id}`;
 
     confirmDelete(
-      `Are you sure you want to delete category ${name}?\nThis may affect cars assigned to this category.`,
+      t('confirm_delete_category', { name }),
       async () => {
         try {
           await api.delete(`/car-categories/${id}`);
-          showToast('Category deleted 🗑️', 'info');
+          showToast(t('toast_category_deleted'), 'info');
           this.load();
         } catch (e) {
           showToast(e.message, 'error');

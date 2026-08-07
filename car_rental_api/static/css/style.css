@@ -130,6 +130,24 @@ body {
 }
 .badge-api i { font-size: .5rem; }
 
+/* Language selector */
+.lang-select {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-size: .9rem;
+  color: var(--text);
+  outline: none;
+  cursor: pointer;
+  transition: box-shadow var(--transition), border-color var(--transition), transform .08s;
+}
+.lang-select:focus {
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.08);
+  border-color: var(--primary);
+}
+
+
 /* ── CONTENT ── */
 .content { padding: 24px; flex: 1; }
 

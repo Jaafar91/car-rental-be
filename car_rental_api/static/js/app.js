@@ -1,10 +1,74 @@
 // ── STATE ──
+const supportedLangs = ['en', 'fr'];
 let currentPage = 'dashboard';
+let currentLang = localStorage.getItem('car_rental_lang') || 'en';
+let locale = {};
+
+async function loadLocale(lang = currentLang) {
+  if (!supportedLangs.includes(lang)) lang = 'en';
+  currentLang = lang;
+
+  try {
+    const res = await fetch(`/static/locales/${lang}.json`);
+    locale = res.ok ? await res.json() : {};
+  } catch (error) {
+    console.error('Unable to load locale', error);
+    locale = {};
+  }
+
+  document.documentElement.lang = lang;
+  const langSelect = document.getElementById('langSelect');
+  if (langSelect) langSelect.value = lang;
+  localStorage.setItem('car_rental_lang', lang);
+  document.title = t('appTitle');
+  translateDOM();
+  if (currentPage) navigateTo(currentPage);
+}
+
+function t(key, vars = {}) {
+  let str = locale[key] ?? key;
+  if (vars && typeof vars === 'object' && Object.keys(vars).length) {
+    Object.entries(vars).forEach(([name, value]) => {
+      str = str.replace(new RegExp(`\{${name}\}`, 'g'), value);
+    });
+  }
+  return str;
+}
+
+function translateDOM(root = document) {
+  root.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (key) el.textContent = t(key);
+  });
+
+  root.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.dataset.i18nPlaceholder;
+    if (key) el.placeholder = t(key);
+  });
+
+  root.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const key = el.dataset.i18nTitle;
+    if (key) el.title = t(key);
+  });
+}
+
+function translateTemplate(html) {
+  return html.replace(/\{\{(.+?)\}\}/g, (_, key) => t(key.trim()));
+}
+
+function setLanguage(lang) {
+  loadLocale(lang);
+}
 
 // ── SIDEBAR TOGGLE ──
 document.getElementById('toggleSidebar').addEventListener('click', () => {
   document.getElementById('sidebar').classList.toggle('collapsed');
   document.querySelector('.main-wrapper').classList.toggle('expanded');
+});
+
+// ── LANGUAGE SWITCHER ──
+document.getElementById('langSelect')?.addEventListener('change', e => {
+  setLanguage(e.target.value);
 });
 
 // ── NAVIGATION ──
@@ -19,21 +83,11 @@ document.querySelectorAll('.nav-item').forEach(item => {
 function navigateTo(page) {
   currentPage = page;
 
-  // Update active nav
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.querySelector(`[data-page="${page}"]`)?.classList.add('active');
 
-  // Update title
-  const titles = {
-    dashboard: 'Dashboard', branches: 'Branches',
-    car_categories: 'Car Categories', car_status: 'Car Status',
-    cars: 'Cars', customers: 'Customers', staff: 'Staff',
-    reservations: 'Reservations', rentals: 'Rentals',
-    payments: 'Payments', maintenance: 'Maintenance'
-  };
-  document.getElementById('pageTitle').textContent = titles[page] || page;
+  document.getElementById('pageTitle').textContent = t(`nav_${page}`);
 
-  // Load page
   const pages = {
     dashboard, branches, car_categories, car_status,
     cars, customers, staff, reservations, rentals, payments, maintenance
@@ -46,7 +100,7 @@ function navigateTo(page) {
 const dashboard = {
   async load() {
     const content = document.getElementById('pageContent');
-    content.innerHTML = `<div class="loading"><div class="spinner"></div> Loading...</div>`;
+    content.innerHTML = translateTemplate(`<div class="loading"><div class="spinner"></div> {{loading}}</div>`);
 
     try {
       const [br, cats, cars, custs, staff, res, rent, pay, maint] = await Promise.all([
@@ -61,46 +115,46 @@ const dashboard = {
         api.get('/maintenance/'),
       ]);
 
-      content.innerHTML = `
+      content.innerHTML = translateTemplate(`
         <div class="stats-grid">
-          ${stat('🏢', br.length,    'Branches',     '#2563eb')}
-          ${stat('🚗', cars.length,  'Cars',         '#7c3aed')}
-          ${stat('👥', custs.length, 'Customers',    '#0891b2')}
-          ${stat('👔', staff.length, 'Staff',        '#065f46')}
-          ${stat('📅', res.length,   'Reservations', '#b45309')}
-          ${stat('🔑', rent.length,  'Rentals',      '#be185d')}
-          ${stat('💳', pay.length,   'Payments',     '#15803d')}
-          ${stat('🔧', maint.length, 'Maintenance',  '#dc2626')}
-          ${stat('🏷️', cats.length,  'Categories',   '#6d28d9')}
+          ${stat('🏢', br.length, 'nav_branches', '#2563eb')}
+          ${stat('🚗', cars.length, 'nav_cars', '#7c3aed')}
+          ${stat('👥', custs.length, 'nav_customers', '#0891b2')}
+          ${stat('👔', staff.length, 'nav_staff', '#065f46')}
+          ${stat('📅', res.length, 'nav_reservations', '#b45309')}
+          ${stat('🔑', rent.length, 'nav_rentals', '#be185d')}
+          ${stat('💳', pay.length, 'nav_payments', '#15803d')}
+          ${stat('🔧', maint.length, 'nav_maintenance', '#dc2626')}
+          ${stat('🏷️', cats.length, 'col_categories', '#6d28d9')}
         </div>
 
         <div class="table-wrapper" style="padding:20px">
-          <h3 style="margin-bottom:16px">📋 Recent Reservations</h3>
+          <h3 style="margin-bottom:16px">📋 {{recent_reservations}}</h3>
           ${buildReservationSummary(res.slice(0, 5))}
         </div>
-      `;
+      `);
     } catch (e) {
       content.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i>${e.message}</div>`;
     }
   }
 };
 
-function stat(icon, value, label, color) {
+function stat(icon, value, labelKey, color) {
   return `
     <div class="stat-card" style="border-left-color:${color}">
       <div class="stat-icon">${icon}</div>
       <div class="stat-value">${value}</div>
-      <div class="stat-label">${label}</div>
+      <div class="stat-label">${t(labelKey)}</div>
     </div>`;
 }
 
 function buildReservationSummary(items) {
-  if (!items.length) return `<div class="empty-state"><i class="fas fa-calendar"></i>No reservations yet</div>`;
+  if (!items.length) return translateTemplate(`<div class="empty-state"><i class="fas fa-calendar"></i> {{no_reservations}}</div>`);
   return `
     <table>
       <thead><tr>
-        <th>ID</th><th>Customer</th><th>Car</th>
-        <th>Start</th><th>End</th><th>Status</th>
+        <th>${t('col_id')}</th><th>${t('col_customer')}</th><th>${t('col_car')}</th>
+        <th>${t('col_start')}</th><th>${t('col_end')}</th><th>${t('col_status')}</th>
       </tr></thead>
       <tbody>
         ${items.map(r => `
@@ -120,6 +174,7 @@ function buildReservationSummary(items) {
 function openModal(title, bodyHTML, onSubmit) {
   document.getElementById('modalTitle').textContent = title;
   document.getElementById('modalBody').innerHTML = bodyHTML;
+  translateDOM(document.getElementById('modal'));
   document.getElementById('modalOverlay').classList.add('open');
 
   const submitBtn = document.getElementById('modalSubmit');
@@ -160,23 +215,26 @@ function statusBadge(status) {
     ongoing: 'badge-blue', paid: 'badge-green',
     partial: 'badge-yellow', refunded: 'badge-gray',
     scheduled: 'badge-yellow',
+    in_progress: 'badge-warning',
   };
-  const cls = map[(status || '').toLowerCase()] || 'badge-gray';
-  return `<span class="badge ${cls}">${status || '-'}</span>`;
+  const normalized = (status || '').toString().toLowerCase();
+  const cls = map[normalized] || 'badge-gray';
+  const label = normalized ? t(`status_${normalized}`) : '-';
+  return `<span class="badge ${cls}">${label}</span>`;
 }
 
 // ── GENERIC TABLE BUILDER ──
 function buildTable(columns, rows, actions) {
   if (!rows.length) return `
     <div class="empty-state">
-      <i class="fas fa-inbox"></i>No records found
+      <i class="fas fa-inbox"></i>${t('no_records')}
     </div>`;
 
   return `
     <table>
       <thead><tr>
         ${columns.map(c => `<th>${c.label}</th>`).join('')}
-        <th>Actions</th>
+        <th>${t('col_actions')}</th>
       </tr></thead>
       <tbody>
         ${rows.map(row => `
@@ -201,4 +259,4 @@ function setupSearch(inputId, tableId) {
 }
 
 // ── INIT ──
-navigateTo('dashboard');
+loadLocale(currentLang);
