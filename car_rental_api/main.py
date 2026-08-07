@@ -18,7 +18,7 @@ app = FastAPI(title="Car Rental API", version="1.0.0")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # ✅ Serve dashboard at root
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 def serve_dashboard():
     return FileResponse("static/index.html")
 
