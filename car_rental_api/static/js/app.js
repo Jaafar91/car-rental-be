@@ -5,6 +5,7 @@ let currentLang = localStorage.getItem('car_rental_lang') || 'en';
 let currentCurrency = '';
 let currentLocale = '';
 let locale = {};
+let rolePermissions = [];
 
 async function loadConfig() {
   try {
@@ -94,6 +95,46 @@ function setLanguage(lang) {
   loadLocale(lang);
 }
 
+function isAdmin() {
+  return Boolean(authState?.staff?.role && authState.staff.role.toLowerCase() === 'admin');
+}
+
+function hasModuleAccess(moduleKey) {
+  if (!moduleKey) return true;
+  if (isAdmin()) return true;
+  return rolePermissions.includes(String(moduleKey).toLowerCase());
+}
+
+function updateSidebarVisibility() {
+  document.querySelectorAll('.nav-item').forEach(item => {
+    const moduleKey = (item.dataset.module || item.dataset.page || '').toLowerCase();
+    const allowed = !moduleKey || moduleKey === 'dashboard' || isAdmin() || hasModuleAccess(moduleKey);
+    item.style.display = allowed ? '' : 'none';
+  });
+}
+
+async function refreshModuleAccess() {
+  if (!authState?.token) {
+    rolePermissions = [];
+    updateSidebarVisibility();
+    return;
+  }
+
+  try {
+    const response = await api.get('/role-permissions/me');
+    rolePermissions = (response?.modules || []).map(item => String(item).toLowerCase());
+    updateSidebarVisibility();
+
+    if (currentPage && currentPage !== 'dashboard' && currentPage !== 'profile' && !hasModuleAccess(currentPage)) {
+      showToast('You do not have access to this module', 'error');
+      navigateTo('dashboard');
+    }
+  } catch (error) {
+    rolePermissions = [];
+    updateSidebarVisibility();
+  }
+}
+
 // ── SIDEBAR TOGGLE ──
 document.getElementById('toggleSidebar').addEventListener('click', () => {
   document.getElementById('sidebar').classList.toggle('collapsed');
@@ -114,17 +155,22 @@ document.querySelectorAll('.nav-item').forEach(item => {
       showToast('Only admins can access staff management', 'error');
       return;
     }
+    if (page !== 'dashboard' && page !== 'profile' && !hasModuleAccess(page)) {
+      showToast('You do not have access to this module', 'error');
+      return;
+    }
     navigateTo(page);
   });
 });
 
-function isAdmin() {
-  return Boolean(authState?.staff?.role && authState.staff.role.toLowerCase() === 'admin');
-}
-
 function navigateTo(page) {
   if (page === 'staff' && !isAdmin()) {
     showToast('Only admins can access staff management', 'error');
+    page = 'dashboard';
+  }
+
+  if (page !== 'dashboard' && page !== 'profile' && !hasModuleAccess(page)) {
+    showToast('You do not have access to this module', 'error');
     page = 'dashboard';
   }
 
@@ -137,7 +183,7 @@ function navigateTo(page) {
 
   const pages = {
     dashboard, branches, car_categories, car_status,
-    cars, customers, profile, staff, reservations, rentals, payments, maintenance
+    cars, customers, profile, staff, reservations, rentals, payments, maintenance, role_access
   };
 
   if (pages[page]) pages[page].load();
@@ -162,17 +208,21 @@ const dashboard = {
         api.get('/maintenance/'),
       ]);
 
+      const visibleCards = [
+        { icon: '🏢', value: br.length, labelKey: 'nav_branches', color: '#2563eb', pageKey: 'branches' },
+        { icon: '🚗', value: cars.length, labelKey: 'nav_cars', color: '#7c3aed', pageKey: 'cars' },
+        { icon: '👥', value: custs.length, labelKey: 'nav_customers', color: '#0891b2', pageKey: 'customers' },
+        { icon: '👔', value: staff.length, labelKey: 'nav_staff', color: '#065f46', pageKey: 'staff' },
+        { icon: '📅', value: res.length, labelKey: 'nav_reservations', color: '#b45309', pageKey: 'reservations' },
+        { icon: '🔑', value: rent.length, labelKey: 'nav_rentals', color: '#be185d', pageKey: 'rentals' },
+        { icon: '💳', value: pay.length, labelKey: 'nav_payments', color: '#15803d', pageKey: 'payments' },
+        { icon: '🔧', value: maint.length, labelKey: 'nav_maintenance', color: '#dc2626', pageKey: 'maintenance' },
+        { icon: '🏷️', value: cats.length, labelKey: 'nav_car_categories', color: '#6d28d9', pageKey: 'car_categories' },
+      ].filter(card => !card.pageKey || isAdmin() || hasModuleAccess(card.pageKey));
+
       content.innerHTML = translateTemplate(`
         <div class="stats-grid">
-          ${stat('🏢', br.length, 'nav_branches', '#2563eb', 'branches')}
-          ${stat('🚗', cars.length, 'nav_cars', '#7c3aed', 'cars')}
-          ${stat('👥', custs.length, 'nav_customers', '#0891b2', 'customers')}
-          ${stat('👔', staff.length, 'nav_staff', '#065f46', 'staff')}
-          ${stat('📅', res.length, 'nav_reservations', '#b45309', 'reservations')}
-          ${stat('🔑', rent.length, 'nav_rentals', '#be185d', 'rentals')}
-          ${stat('💳', pay.length, 'nav_payments', '#15803d', 'payments')}
-          ${stat('🔧', maint.length, 'nav_maintenance', '#dc2626', 'maintenance')}
-          ${stat('🏷️', cats.length, 'col_categories', '#6d28d9', 'car_categories')}
+          ${visibleCards.map(card => stat(card.icon, card.value, card.labelKey, card.color, card.pageKey)).join('')}
         </div>
 
         <div class="table-wrapper" style="padding:20px">

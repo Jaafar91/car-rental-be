@@ -66,6 +66,9 @@ async function bootstrapAuth() {
       await loadConfig();
       await loadLocale(currentLang);
     }
+    if (typeof refreshModuleAccess === 'function') {
+      await refreshModuleAccess();
+    }
   } catch (error) {
     logout();
   }

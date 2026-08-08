@@ -9,7 +9,7 @@ from config import settings
 from routers import (
     branches, car_categories, car_status,
     customers, staff, cars, maintenance,
-    reservations, rentals, payments
+    reservations, rentals, payments, role_permissions
 )
 
 def ensure_staff_password_hash_column():
@@ -72,3 +72,4 @@ app.include_router(maintenance.router)
 app.include_router(reservations.router)
 app.include_router(rentals.router)
 app.include_router(payments.router)
+app.include_router(role_permissions.router)

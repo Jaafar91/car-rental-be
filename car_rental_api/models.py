@@ -86,6 +86,20 @@ class Staff(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
+class RoleModuleAccess(Base):
+    __tablename__ = "role_module_access"
+
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    role_name = Column(String(30), nullable=False)
+    module_key = Column(String(60), nullable=False)
+    can_access = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    __table_args__ = (
+        Index("idx_role_module_access_role", "role_name"),
+    )
+
+
 # ─────────────────────────────────────────
 # 🚙 Car
 # ─────────────────────────────────────────
