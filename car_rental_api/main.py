@@ -25,7 +25,21 @@ def ensure_staff_password_hash_column():
             conn.execute(text("ALTER TABLE staff ADD COLUMN password_hash VARCHAR(255)"))
 
 
+def ensure_rental_staff_id_column():
+    with engine.begin() as conn:
+        exists = conn.execute(text("""
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = 'rentals'
+              AND column_name = 'staff_id'
+        """)).scalar()
+        if not exists:
+            conn.execute(text("ALTER TABLE rentals ADD COLUMN staff_id BIGINT"))
+
+
 ensure_staff_password_hash_column()
+ensure_rental_staff_id_column()
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Car Rental API", version="1.0.0")

@@ -177,6 +177,7 @@ class Rental(Base):
     reservation_id    = Column(BigInteger, ForeignKey("reservations.reservation_id", ondelete="SET NULL"), nullable=True)
     customer_id       = Column(BigInteger, ForeignKey("customers.customer_id"), nullable=False)
     car_id            = Column(BigInteger, ForeignKey("cars.car_id"), nullable=False)
+    staff_id          = Column(BigInteger, ForeignKey("staff.staff_id"), nullable=True)
     branch_pickup_id  = Column(BigInteger, ForeignKey("branches.branch_id"), nullable=True)
     branch_dropoff_id = Column(BigInteger, ForeignKey("branches.branch_id"), nullable=True)
     rental_date       = Column(DateTime(timezone=True), nullable=False)

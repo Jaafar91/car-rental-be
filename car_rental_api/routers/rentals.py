@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
-from models import Rental
+from models import Rental, Staff
 from schemas import RentalCreate, RentalUpdate, RentalResponse
 from typing import List
-from auth_utils import require_roles
+from auth_utils import get_current_staff, require_roles
 
 router = APIRouter(prefix="/rentals", tags=["Rentals"])
 
@@ -20,19 +20,24 @@ def get_one(id: int, db: Session = Depends(get_db)):
     return obj
 
 @router.post("/", response_model=RentalResponse, status_code=201, dependencies=[Depends(require_roles("admin", "manager", "agent"))])
-def create(data: RentalCreate, db: Session = Depends(get_db)):
-    obj = Rental(**data.model_dump())
+def create(data: RentalCreate, staff: Staff = Depends(get_current_staff), db: Session = Depends(get_db)):
+    payload = data.model_dump()
+    payload["staff_id"] = staff.staff_id
+    obj = Rental(**payload)
     db.add(obj)
     db.commit()
     db.refresh(obj)
     return obj
 
 @router.put("/{id}", response_model=RentalResponse, dependencies=[Depends(require_roles("admin", "manager", "agent"))])
-def update(id: int, data: RentalUpdate, db: Session = Depends(get_db)):
+def update(id: int, data: RentalUpdate, staff: Staff = Depends(get_current_staff), db: Session = Depends(get_db)):
     obj = db.query(Rental).filter(Rental.rental_id == id).first()
     if not obj:
         raise HTTPException(status_code=404, detail="Rental not found")
-    for k, v in data.model_dump().items():
+    payload = data.model_dump(exclude_unset=True)
+    if "staff_id" not in payload:
+        payload["staff_id"] = obj.staff_id or staff.staff_id
+    for k, v in payload.items():
         setattr(obj, k, v)
     db.commit()
     db.refresh(obj)

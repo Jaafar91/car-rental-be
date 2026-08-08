@@ -255,6 +255,7 @@ class RentalBase(BaseModel):
     reservation_id: Optional[int] = None
     customer_id: int
     car_id: int
+    staff_id: Optional[int] = None
     branch_pickup_id: Optional[int] = None
     branch_dropoff_id: Optional[int] = None
     rental_date: datetime
@@ -277,6 +278,7 @@ class RentalUpdate(BaseModel):
     reservation_id: Optional[int] = None
     customer_id: Optional[int] = None
     car_id: Optional[int] = None
+    staff_id: Optional[int] = None
     branch_pickup_id: Optional[int] = None
     branch_dropoff_id: Optional[int] = None
     rental_date: Optional[datetime] = None

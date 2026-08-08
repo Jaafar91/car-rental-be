@@ -181,18 +181,12 @@ const rentals = {
         ${c.full_name} (${c.email})
       </option>`).join('');
 
-    const staffOpts = this.staff
-      .map(s => `<option value="${s.staff_id}" ${d.staff_id === s.staff_id ? 'selected' : ''}>
-        ${s.first_name} ${s.last_name}
-      </option>`).join('');
-
     const statuses = ['active', 'completed', 'overdue', 'cancelled'];
     const fmtDT = val => val ? val.substring(0, 16) : '';
     const currencySymbol = currentCurrency || 'USD';
     const labelCar = t('label_car');
     const labelCustomer = t('label_customer');
     const labelStatus = t('label_status');
-    const labelStaff = t('label_staff');
     const labelRentalDate = t('label_rental_date');
     const labelDueDate = t('label_due_date');
     const labelReturnDate = t('label_return_date');
@@ -201,7 +195,6 @@ const rentals = {
     const labelTotalAmount = t('label_total_amount');
     const placeholderSelectCar = t('placeholder_select_car');
     const placeholderSelectCustomer = t('placeholder_select_customer');
-    const placeholderNone = t('placeholder_none');
     const labelNotes = t('label_notes');
 
     return `
@@ -223,21 +216,14 @@ const rentals = {
         </div>
       </div>
 
-      <!-- Row 2: Status & Staff -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+      <!-- Row 2: Status -->
+      <div style="display:grid;grid-template-columns:1fr;gap:1rem;margin-bottom:1rem;">
         <div class="form-group">
           <label for="f_rental_status">${labelStatus}</label>
           <select id="f_rental_status">
             ${statuses.map(s =>
               `<option value="${s}" ${d.status === s ? 'selected' : ''}>${t(`status_${s}`)}</option>`
             ).join('')}
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="f_rental_staff">${labelStaff}</label>
-          <select id="f_rental_staff">
-            <option value="">${placeholderNone}</option>
-            ${staffOpts}
           </select>
         </div>
       </div>
@@ -423,7 +409,7 @@ const rentals = {
     const total_amount    = document.getElementById('f_rental_amount').value;
     const daily_rate      = document.getElementById('f_daily_rate').value;
     const discount_amount = document.getElementById('f_discount_amount').value;
-    const staff_id        = document.getElementById('f_rental_staff').value;
+    const staff_id        = authState?.staff?.staff_id || null;
     const notes           = document.getElementById('f_rental_notes').value.trim();
 
     if (!car_id)      { showToast(t('error_select_car'), 'error');      return null; }
@@ -449,7 +435,7 @@ const rentals = {
       total_amount:    total_amount    !== '' ? parseFloat(total_amount)    : null,
       daily_rate:      daily_rate      !== '' ? parseFloat(daily_rate)      : null,
       discount_amount: discount_amount !== '' ? parseFloat(discount_amount) : null,
-      staff_id:        staff_id ? parseInt(staff_id) : null,
+      staff_id,
       notes:           notes || null,
       currency:        currentCurrency || undefined,
     };
