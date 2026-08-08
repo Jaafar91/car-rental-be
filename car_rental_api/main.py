@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from sqlalchemy import text
 from database import engine, Base
 from config import settings
 
@@ -11,6 +12,20 @@ from routers import (
     reservations, rentals, payments
 )
 
+def ensure_staff_password_hash_column():
+    with engine.begin() as conn:
+        exists = conn.execute(text("""
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = 'staff'
+              AND column_name = 'password_hash'
+        """)).scalar()
+        if not exists:
+            conn.execute(text("ALTER TABLE staff ADD COLUMN password_hash VARCHAR(255)"))
+
+
+ensure_staff_password_hash_column()
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Car Rental API", version="1.0.0")

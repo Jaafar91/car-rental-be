@@ -3,9 +3,14 @@ const API_BASE = '';   // same origin; change to 'http://localhost:8000' if need
 
 // ── Generic fetch wrapper ──
 async function apiFetch(endpoint, method = 'GET', body = null) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (typeof authState !== 'undefined' && authState?.token) {
+    headers.Authorization = `Bearer ${authState.token}`;
+  }
+
   const opts = {
     method,
-    headers: { 'Content-Type': 'application/json' }
+    headers
   };
   if (body) opts.body = JSON.stringify(body);
 

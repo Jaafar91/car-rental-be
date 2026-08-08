@@ -122,6 +122,8 @@ class StaffBase(BaseModel):
     email: Optional[str] = None
     phone: Optional[str] = None
     role: Optional[str] = None
+    password: Optional[str] = None
+    password_hash: Optional[str] = None
     hire_date: Optional[date] = None
     is_active: Optional[bool] = True
 

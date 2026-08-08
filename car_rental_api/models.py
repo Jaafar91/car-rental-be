@@ -80,6 +80,7 @@ class Staff(Base):
     branch_id  = Column(BigInteger, ForeignKey("branches.branch_id"), nullable=True)
     phone      = Column(String(30), nullable=True)
     role      = Column(String(30), nullable=True)
+    password_hash = Column(String(255), nullable=True)
     hire_date   = Column(Date, nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
