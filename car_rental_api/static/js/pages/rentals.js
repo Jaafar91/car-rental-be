@@ -132,7 +132,7 @@ const rentals = {
                   : `<span style="color:#94a3b8">${t('status_pending')}</span>` },
               { key: 'total_amount', label: t('col_total_amount'),
                 render: row => row.total_amount != null
-                  ? `<strong>$${parseFloat(row.total_amount).toFixed(2)}</strong>` : '—' },
+                  ? `<strong>${formatCurrency(row.total_amount)}</strong>` : '—' },
               { key: 'staff_id',    label: t('col_staff'),
                 render: row => this.staffLabel(row.staff_id) },
             ],
@@ -168,6 +168,9 @@ const rentals = {
 
   // ── FORM HTML ──
   formHTML(d = {}) {
+    const dailyRateLabel = t('label_daily_rate').replace('{currency}', currentCurrency || 'USD');
+    const dailyRatePlaceholder = t('ph_daily_rate').replace('{currency}', currentCurrency || 'USD');
+    const discountPlaceholder = t('ph_discount_amount').replace('{currency}', currentCurrency || 'USD');
     const carOpts = this.cars
       .map(c => `<option value="${c.car_id}" ${d.car_id === c.car_id ? 'selected' : ''}>
         ${c.make} ${c.model} — ${c.license_plate}
@@ -185,21 +188,36 @@ const rentals = {
 
     const statuses = ['active', 'completed', 'overdue', 'cancelled'];
     const fmtDT = val => val ? val.substring(0, 16) : '';
+    const currencySymbol = currentCurrency || 'USD';
+    const labelCar = t('label_car');
+    const labelCustomer = t('label_customer');
+    const labelStatus = t('label_status');
+    const labelStaff = t('label_staff');
+    const labelRentalDate = t('label_rental_date');
+    const labelDueDate = t('label_due_date');
+    const labelReturnDate = t('label_return_date');
+    const labelTotalDuration = t('label_total_duration');
+    const labelDiscountAmount = t('label_discount_amount');
+    const labelTotalAmount = t('label_total_amount');
+    const placeholderSelectCar = t('placeholder_select_car');
+    const placeholderSelectCustomer = t('placeholder_select_customer');
+    const placeholderNone = t('placeholder_none');
+    const labelNotes = t('label_notes');
 
     return `
       <!-- Row 1: Car & Customer -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
         <div class="form-group">
-          <label for="f_rental_car">{{label_car}} <span style="color:red">*</span></label>
+          <label for="f_rental_car">${labelCar} <span style="color:red">*</span></label>
           <select id="f_rental_car">
-            <option value="">{{placeholder_select_car}}</option>
+            <option value="">${placeholderSelectCar}</option>
             ${carOpts}
           </select>
         </div>
         <div class="form-group">
-          <label for="f_rental_cust">{{label_customer}} <span style="color:red">*</span></label>
+          <label for="f_rental_cust">${labelCustomer} <span style="color:red">*</span></label>
           <select id="f_rental_cust">
-            <option value="">{{placeholder_select_customer}}</option>
+            <option value="">${placeholderSelectCustomer}</option>
             ${custOpts}
           </select>
         </div>
@@ -208,7 +226,7 @@ const rentals = {
       <!-- Row 2: Status & Staff -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
         <div class="form-group">
-          <label for="f_rental_status">{{label_status}}</label>
+          <label for="f_rental_status">${labelStatus}</label>
           <select id="f_rental_status">
             ${statuses.map(s =>
               `<option value="${s}" ${d.status === s ? 'selected' : ''}>${t(`status_${s}`)}</option>`
@@ -216,9 +234,9 @@ const rentals = {
           </select>
         </div>
         <div class="form-group">
-          <label for="f_rental_staff">{{label_staff}}</label>
+          <label for="f_rental_staff">${labelStaff}</label>
           <select id="f_rental_staff">
-            <option value="">{{placeholder_none}}</option>
+            <option value="">${placeholderNone}</option>
             ${staffOpts}
           </select>
         </div>
@@ -227,11 +245,11 @@ const rentals = {
       <!-- Row 3a: Rental Date & Due Date -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
         <div class="form-group">
-          <label for="f_rental_date">{{label_rental_date}} <span style="color:red">*</span></label>
+          <label for="f_rental_date">${labelRentalDate} <span style="color:red">*</span></label>
           <input id="f_rental_date" type="datetime-local" value="${fmtDT(d.rental_date)}" />
         </div>
         <div class="form-group">
-          <label for="f_due_date">{{label_due_date}} <span style="color:red">*</span></label>
+          <label for="f_due_date">${labelDueDate} <span style="color:red">*</span></label>
           <input id="f_due_date" type="datetime-local" value="${fmtDT(d.due_date)}" />
         </div>
       </div>
@@ -240,7 +258,7 @@ const rentals = {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
         <div class="form-group">
           <label for="f_return_date">
-            {{label_return_date}}
+            ${labelReturnDate}
             <span style="color:#94a3b8;font-size:0.8rem;">(optional)</span>
           </label>
           <input id="f_return_date" type="datetime-local" value="${fmtDT(d.return_date)}" />
@@ -250,7 +268,7 @@ const rentals = {
         <div class="form-group">
           <label for="f_duration_display">
             <i class="fas fa-clock" style="color:#6366f1;margin-right:4px;"></i>
-            {{label_total_duration}}
+            ${labelTotalDuration}
           </label>
           <input
             id="f_duration_display"
@@ -266,19 +284,19 @@ const rentals = {
       <!-- Row 4: Amounts -->
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:0.25rem;">
         <div class="form-group">
-          <label for="f_daily_rate">{{label_daily_rate}} <span style="color:red">*</span></label>
+          <label for="f_daily_rate">${dailyRateLabel} <span style="color:red">*</span></label>
           <input id="f_daily_rate" type="number" step="0.01" min="0"
-            placeholder="{{ph_daily_rate}}"
+            placeholder="${dailyRatePlaceholder}"
             value="${d.daily_rate != null ? d.daily_rate : ''}" />
         </div>
         <div class="form-group">
-          <label for="f_discount_amount">{{label_discount_amount}}</label>
+          <label for="f_discount_amount">${labelDiscountAmount}</label>
           <input id="f_discount_amount" type="number" step="0.01" min="0"
-            placeholder="{{ph_discount_amount}}"
+            placeholder="${discountPlaceholder}"
             value="${d.discount_amount != null ? d.discount_amount : ''}" />
         </div>
         <div class="form-group">
-          <label for="f_rental_amount">{{label_total_amount}}</label>
+          <label for="f_rental_amount">${labelTotalAmount}</label>
           <input id="f_rental_amount" type="number" step="0.01" min="0"
             placeholder="{{ph_auto_calculated}}"
             value="${d.total_amount != null ? d.total_amount : ''}"
@@ -296,14 +314,15 @@ const rentals = {
 
       <!-- Row 5: Notes -->
       <div class="form-group">
-        <label for="f_rental_notes">{{label_notes}}</label>
+        <label for="f_rental_notes">${labelNotes}</label>
         <textarea id="f_rental_notes" rows="3"
-          placeholder="{{ph_optional_notes}}">${d.notes || ''}</textarea>
+          placeholder="${t('ph_optional_notes')}">${d.notes || ''}</textarea>
       </div>`;
   },
 
   // ── SETUP CALCULATION (called after modal opens) ──
   setupCalculation() {
+    const currencyLabel = currentCurrency || 'USD';
     const elRentalDate = document.getElementById('f_rental_date');
     const elDueDate    = document.getElementById('f_due_date');
     const elDailyRate  = document.getElementById('f_daily_rate');
@@ -373,7 +392,7 @@ const rentals = {
         const hint = document.getElementById('calc_hint');
         if (hint) {
           hint.textContent =
-            `${dayCount} day${dayCount !== 1 ? 's' : ''} × $${dailyRate.toFixed(2)} − $${discount.toFixed(2)} = $${total.toFixed(2)}`;
+            `${dayCount} ${t(dayCount !== 1 ? 'duration_days' : 'duration_day')} × ${currencyLabel} ${dailyRate.toFixed(2)} − ${currencyLabel} ${discount.toFixed(2)} = ${currencyLabel} ${total.toFixed(2)}`;
         }
       } else {
         elTotal.value       = '';
@@ -432,7 +451,7 @@ const rentals = {
       discount_amount: discount_amount !== '' ? parseFloat(discount_amount) : null,
       staff_id:        staff_id ? parseInt(staff_id) : null,
       notes:           notes || null,
-      currency:        'USD',
+      currency:        currentCurrency || undefined,
     };
   },
 

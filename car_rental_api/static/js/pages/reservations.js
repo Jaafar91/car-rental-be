@@ -53,7 +53,7 @@ const reservations = {
             { key: 'pickup_at',  label: t('col_start') },
             { key: 'dropoff_at',    label: t('col_end') },
             { key: 'status',      label: t('col_status'), render: r => statusBadge(r.status) },
-            { key: 'total_amount',label: t('col_total'),  render: r => `$${r.total_amount || 0}` },
+            { key: 'total_amount',label: t('col_total'),  render: r => formatCurrency(r.total_amount) },
           ], this.data, row => `
             <button class="btn btn-warning btn-sm" title="${t('btn_edit')}" onclick="reservations.openEdit(${row.reservation_id})">
               <i class="fas fa-edit"></i>

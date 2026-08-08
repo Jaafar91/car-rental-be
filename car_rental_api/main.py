@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from database import engine, Base
+from config import settings
 
 # Import all routers
 from routers import (
@@ -13,6 +14,7 @@ from routers import (
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Car Rental API", version="1.0.0")
+app.state.settings = settings
 
 # ✅ Serve static files (locales/ is inside static/)
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -21,6 +23,14 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 @app.api_route("/", methods=["GET", "HEAD"])
 def serve_dashboard():
     return FileResponse("static/index.html")
+
+@app.get('/api/config')
+def get_config():
+    settings.reload()
+    return {
+        'default_currency': settings.default_currency,
+        'default_locale': settings.default_locale,
+    }
 
 # Include all routers
 app.include_router(branches.router)

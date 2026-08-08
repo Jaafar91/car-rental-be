@@ -2,7 +2,35 @@
 const supportedLangs = ['en', 'fr'];
 let currentPage = 'dashboard';
 let currentLang = localStorage.getItem('car_rental_lang') || 'en';
+let currentCurrency = '';
+let currentLocale = '';
 let locale = {};
+
+async function loadConfig() {
+  try {
+    const config = await api.get('/api/config');
+    currentCurrency = config.default_currency || currentCurrency;
+    currentLocale = config.default_locale || currentLocale;
+  } catch (error) {
+    console.warn('Unable to load config', error);
+  }
+}
+
+function formatCurrency(value, currency = currentCurrency, localeString = currentLocale) {
+  if (value === null || value === undefined || value === '') return '—';
+  const numberValue = Number(value);
+  if (Number.isNaN(numberValue)) return String(value);
+  try {
+    return new Intl.NumberFormat(localeString, {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(numberValue);
+  } catch (error) {
+    return `${currency} ${numberValue.toFixed(2)}`;
+  }
+}
 
 async function loadLocale(lang = currentLang) {
   if (!supportedLangs.includes(lang)) lang = 'en';
@@ -27,11 +55,17 @@ async function loadLocale(lang = currentLang) {
 
 function t(key, vars = {}) {
   let str = locale[key] ?? key;
+  if (typeof str !== 'string') str = String(str ?? '');
   if (vars && typeof vars === 'object' && Object.keys(vars).length) {
     Object.entries(vars).forEach(([name, value]) => {
-      str = str.replace(new RegExp(`\{${name}\}`, 'g'), value);
+      str = str.replace(new RegExp(`\\{${name}\\}`, 'g'), value);
     });
   }
+
+  if (str.includes('{currency}')) {
+    str = str.replace(/currency/g, currentCurrency || 'USD');
+  }
+
   return str;
 }
 
@@ -259,4 +293,6 @@ function setupSearch(inputId, tableId) {
 }
 
 // ── INIT ──
-loadLocale(currentLang);
+loadConfig()
+  .then(() => loadLocale(currentLang))
+  .catch(() => loadLocale(currentLang));

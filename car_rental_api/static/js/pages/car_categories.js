@@ -68,7 +68,7 @@ const car_categories = {
                 label: t('col_daily_rate'),
                 render: row =>
                   row.daily_rate != null
-                    ? `<strong>$${parseFloat(row.daily_rate).toFixed(2)}</strong>`
+                    ? `<strong>${formatCurrency(row.daily_rate)}</strong>`
                     : `<span style="color:#94a3b8">${t('placeholder_empty')}</span>`
               },
             ],
@@ -91,6 +91,8 @@ const car_categories = {
 
   // ── FORM HTML ──
   formHTML(d = {}) {
+    const dailyRateLabel = t('label_daily_rate').replace('{currency}', currentCurrency || 'USD');
+
     return translateTemplate(`
       <!-- Category Name -->
       <div class="form-group">
@@ -115,7 +117,7 @@ const car_categories = {
 
       <!-- Daily Rate -->
       <div class="form-group">
-        <label for="f_daily_rate">{{label_daily_rate}}</label>
+        <label for="f_daily_rate">${dailyRateLabel}</label>
         <input
           id="f_daily_rate"
           type="number"

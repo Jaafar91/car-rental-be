@@ -35,7 +35,7 @@ const cars = {
             { key: 'model',         label: t('col_model') },
             { key: 'year',          label: t('col_year') },
             { key: 'license_plate', label: t('col_license_plate') },
-            { key: 'daily_rate',    label: t('col_rate_per_day'), render: r => `$${this.categories.find(c => c.category_id === r.category_id)?.daily_rate}` },
+            { key: 'daily_rate',    label: t('col_rate_per_day'), render: r => formatCurrency(this.categories.find(c => c.category_id === r.category_id)?.daily_rate) },
             { key: 'status_id',     label: t('col_status'), render: r => {
               const s = this.statuses.find(x => x.status_id === r.status_id);
               return statusBadge(s?.status_name || r.status_id);

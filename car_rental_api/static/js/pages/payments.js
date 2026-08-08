@@ -30,7 +30,7 @@ const payments = {
           ${buildTable([
             { key: 'payment_id',   label: t('col_id') },
             { key: 'rental_id',    label: t('col_rental') },
-            { key: 'amount',       label: t('col_amount'), render: r => `$${r.amount}` },
+            { key: 'amount',       label: t('col_amount'), render: r => formatCurrency(r.amount) },
             { key: 'payment_method', label: t('col_method') },
             { key: 'payment_status', label: t('col_status'), render: r => statusBadge(r.payment_status) },
             { key: 'payment_date',  label: t('col_date') },

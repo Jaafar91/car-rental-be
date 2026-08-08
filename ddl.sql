@@ -6,11 +6,14 @@
 
 CREATE TABLE public.branches (
 	branch_id bigserial NOT NULL,
-	"name" varchar(120) NOT NULL,
+	branch_name varchar(120) NOT NULL,
 	address text NULL,
 	phone varchar(30) NULL,
 	created_at timestamptz NOT NULL DEFAULT now(),
-	CONSTRAINT branches_name_key UNIQUE (name),
+	email varchar(255) NULL,
+	city varchar(255) NULL,
+	state varchar(255) NULL,
+	CONSTRAINT branches_name_key UNIQUE (branch_name),
 	CONSTRAINT branches_pkey PRIMARY KEY (branch_id)
 );
 
@@ -23,11 +26,12 @@ CREATE TABLE public.branches (
 
 CREATE TABLE public.car_categories (
 	category_id bigserial NOT NULL,
-	"name" varchar(80) NOT NULL,
+	category_name varchar(80) NOT NULL,
 	daily_rate numeric(10, 2) NOT NULL,
 	created_at timestamptz NOT NULL DEFAULT now(),
+	description varchar(255) NULL,
 	CONSTRAINT car_categories_daily_rate_check CHECK ((daily_rate >= (0)::numeric)),
-	CONSTRAINT car_categories_name_key UNIQUE (name),
+	CONSTRAINT car_categories_name_key UNIQUE (category_name),
 	CONSTRAINT car_categories_pkey PRIMARY KEY (category_id)
 );
 
@@ -40,8 +44,9 @@ CREATE TABLE public.car_categories (
 
 CREATE TABLE public.car_status (
 	status_id smallserial NOT NULL,
-	"name" varchar(30) NOT NULL,
-	CONSTRAINT car_status_name_key UNIQUE (name),
+	status_name varchar(30) NOT NULL,
+	description varchar(255) NULL,
+	CONSTRAINT car_status_name_key UNIQUE (status_name),
 	CONSTRAINT car_status_pkey PRIMARY KEY (status_id)
 );
 
@@ -62,22 +67,6 @@ CREATE TABLE public.customers (
 	created_at timestamptz NOT NULL DEFAULT now(),
 	CONSTRAINT customers_email_key UNIQUE (email),
 	CONSTRAINT customers_pkey PRIMARY KEY (customer_id)
-);
-
-
--- public.staff definition
-
--- Drop table
-
--- DROP TABLE public.staff;
-
-CREATE TABLE public.staff (
-	staff_id bigserial NOT NULL,
-	full_name varchar(160) NOT NULL,
-	email varchar(255) NULL,
-	created_at timestamptz NOT NULL DEFAULT now(),
-	CONSTRAINT staff_email_key UNIQUE (email),
-	CONSTRAINT staff_pkey PRIMARY KEY (staff_id)
 );
 
 
@@ -129,6 +118,7 @@ CREATE TABLE public.maintenance (
 	completed_at timestamptz NULL,
 	cost_amount numeric(10, 2) NOT NULL DEFAULT 0,
 	created_at timestamptz NOT NULL DEFAULT now(),
+	maintenance_type varchar(255) NULL,
 	CONSTRAINT maintenance_cost_amount_check CHECK ((cost_amount >= (0)::numeric)),
 	CONSTRAINT maintenance_pkey PRIMARY KEY (maintenance_id),
 	CONSTRAINT maintenance_car_id_fkey FOREIGN KEY (car_id) REFERENCES public.cars(car_id) ON DELETE CASCADE
@@ -151,14 +141,40 @@ CREATE TABLE public.reservations (
 	status varchar(30) NOT NULL DEFAULT 'pending'::character varying,
 	notes text NULL,
 	created_at timestamptz NOT NULL DEFAULT now(),
+	car_id int4 NOT NULL,
+	total_amount numeric(18, 3) NULL,
 	CONSTRAINT reservations_check CHECK ((dropoff_at > pickup_at)),
 	CONSTRAINT reservations_pkey PRIMARY KEY (reservation_id),
 	CONSTRAINT reservations_status_check CHECK (((status)::text = ANY ((ARRAY['pending'::character varying, 'confirmed'::character varying, 'cancelled'::character varying, 'completed'::character varying])::text[]))),
 	CONSTRAINT reservations_branch_id_fkey FOREIGN KEY (branch_id) REFERENCES public.branches(branch_id),
-	CONSTRAINT reservations_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES public.customers(customer_id)
+	CONSTRAINT reservations_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES public.customers(customer_id),
+	CONSTRAINT reservations_fk FOREIGN KEY (car_id) REFERENCES public.cars(car_id)
 );
 CREATE INDEX idx_reservations_branch ON public.reservations USING btree (branch_id);
 CREATE INDEX idx_reservations_customer ON public.reservations USING btree (customer_id);
+
+
+-- public.staff definition
+
+-- Drop table
+
+-- DROP TABLE public.staff;
+
+CREATE TABLE public.staff (
+	staff_id bigserial NOT NULL,
+	first_name varchar(160) NOT NULL,
+	email varchar(255) NULL,
+	created_at timestamptz NOT NULL DEFAULT now(),
+	branch_id int4 NOT NULL,
+	phone varchar(50) NULL,
+	last_name varchar(160) NOT NULL,
+	"role" varchar(20) NULL,
+	hire_date date NULL,
+	is_active bool NULL,
+	CONSTRAINT staff_email_key UNIQUE (email),
+	CONSTRAINT staff_pkey PRIMARY KEY (staff_id),
+	CONSTRAINT staff_fk FOREIGN KEY (branch_id) REFERENCES public.branches(branch_id)
+);
 
 
 -- public.rentals definition
@@ -174,8 +190,8 @@ CREATE TABLE public.rentals (
 	car_id int8 NOT NULL,
 	branch_pickup_id int8 NULL,
 	branch_dropoff_id int8 NULL,
-	pickup_at timestamptz NOT NULL,
-	dropoff_at timestamptz NOT NULL,
+	rental_date timestamptz NOT NULL,
+	return_date timestamptz NULL,
 	daily_rate numeric(10, 2) NOT NULL,
 	discount_amount numeric(10, 2) NOT NULL DEFAULT 0,
 	currency bpchar(3) NOT NULL DEFAULT 'USD'::bpchar,
@@ -185,8 +201,9 @@ CREATE TABLE public.rentals (
 	total_amount numeric(12, 2) NULL,
 	created_at timestamptz NOT NULL DEFAULT now(),
 	updated_at timestamptz NOT NULL DEFAULT now(),
-	rental_time_range tstzrange NULL GENERATED ALWAYS AS (tstzrange(pickup_at, dropoff_at, '[)'::text)) STORED,
-	CONSTRAINT rentals_check CHECK ((dropoff_at > pickup_at)),
+	rental_time_range tstzrange NULL GENERATED ALWAYS AS (tstzrange(rental_date, return_date, '[)'::text)) STORED,
+	due_date timestamptz NOT NULL,
+	CONSTRAINT rentals_check CHECK ((return_date > rental_date)),
 	CONSTRAINT rentals_daily_rate_check CHECK ((daily_rate >= (0)::numeric)),
 	CONSTRAINT rentals_discount_amount_check CHECK ((discount_amount >= (0)::numeric)),
 	CONSTRAINT rentals_mileage_end_check CHECK (((mileage_end IS NULL) OR (mileage_end >= 0))),

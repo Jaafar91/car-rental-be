@@ -112,7 +112,7 @@ const maintenance = {
                 label: t('col_cost'),
                 render: row =>
                   row.cost_amount != null
-                    ? `<strong>$${parseFloat(row.cost_amount).toFixed(2)}</strong>`
+                    ? `<strong>${formatCurrency(row.cost_amount)}</strong>`
                     : '<span style="color:#94a3b8">—</span>'
               },
               {

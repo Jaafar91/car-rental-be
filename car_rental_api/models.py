@@ -5,6 +5,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import CHAR
 from database import Base
+from config import settings
 
 
 # ─────────────────────────────────────────
@@ -182,7 +183,7 @@ class Rental(Base):
     return_date       = Column(DateTime(timezone=True), nullable=True)
     daily_rate        = Column(Numeric(10, 2), nullable=False)
     discount_amount   = Column(Numeric(10, 2), nullable=False, default=0)
-    currency          = Column(CHAR(3), nullable=False, default="USD")
+    currency          = Column(CHAR(3), nullable=False, default=settings.default_currency)
     status            = Column(String(30), nullable=False, default="active")
     mileage_start     = Column(Integer, nullable=True)
     mileage_end       = Column(Integer, nullable=True)
@@ -228,7 +229,7 @@ class Payment(Base):
     payment_id = Column(BigInteger, primary_key=True, autoincrement=True)
     rental_id  = Column(BigInteger, ForeignKey("rentals.rental_id", ondelete="CASCADE"), nullable=False)
     amount     = Column(Numeric(10, 2), nullable=False)
-    currency   = Column(CHAR(3), nullable=False, default="USD")
+    currency   = Column(CHAR(3), nullable=False, default=settings.default_currency)
     method     = Column(String(30), nullable=False)
     status     = Column(String(30), nullable=False, default="paid")
     paid_at    = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

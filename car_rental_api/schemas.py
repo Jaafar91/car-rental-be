@@ -5,6 +5,9 @@ from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
 
+from config import settings
+
+DEFAULT_CURRENCY = settings.default_currency
 
 # ══════════════════════════════════════════════════════════════
 # 🏢 BRANCH
@@ -257,7 +260,7 @@ class RentalBase(BaseModel):
     return_date: Optional[datetime] = None
     daily_rate: Decimal
     discount_amount: Optional[Decimal] = Decimal("0.00")
-    currency: Optional[str] = "USD"
+    currency: Optional[str] = None
     status: Optional[RentalStatus] = RentalStatus.active
     mileage_start: Optional[int] = None
     mileage_end: Optional[int] = None
@@ -265,11 +268,25 @@ class RentalBase(BaseModel):
 
 
 class RentalCreate(RentalBase):
-    pass
+    currency: Optional[str] = DEFAULT_CURRENCY
 
 
-class RentalUpdate(RentalBase):
-    pass
+class RentalUpdate(BaseModel):
+    reservation_id: Optional[int] = None
+    customer_id: Optional[int] = None
+    car_id: Optional[int] = None
+    branch_pickup_id: Optional[int] = None
+    branch_dropoff_id: Optional[int] = None
+    rental_date: Optional[datetime] = None
+    due_date: Optional[datetime] = None
+    return_date: Optional[datetime] = None
+    daily_rate: Optional[Decimal] = None
+    discount_amount: Optional[Decimal] = None
+    currency: Optional[str] = None
+    status: Optional[RentalStatus] = None
+    mileage_start: Optional[int] = None
+    mileage_end: Optional[int] = None
+    total_amount: Optional[Decimal] = None
 
 
 class RentalResponse(RentalBase):
@@ -301,7 +318,7 @@ class PaymentStatus(str, Enum):
 class PaymentBase(BaseModel):
     rental_id: int
     amount: Decimal
-    currency: Optional[str] = "USD"
+    currency: Optional[str] = None
     method: PaymentMethod
     status: Optional[PaymentStatus] = PaymentStatus.pending
     paid_at: Optional[datetime] = None
@@ -309,11 +326,17 @@ class PaymentBase(BaseModel):
 
 
 class PaymentCreate(PaymentBase):
-    pass
+    currency: Optional[str] = DEFAULT_CURRENCY
 
 
-class PaymentUpdate(PaymentBase):
-    pass
+class PaymentUpdate(BaseModel):
+    rental_id: Optional[int] = None
+    amount: Optional[Decimal] = None
+    currency: Optional[str] = None
+    method: Optional[PaymentMethod] = None
+    status: Optional[PaymentStatus] = None
+    paid_at: Optional[datetime] = None
+    reference: Optional[str] = None
 
 
 class PaymentResponse(PaymentBase):
