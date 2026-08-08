@@ -27,6 +27,18 @@ const reservations = {
            `T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   },
 
+  formatDate(value) {
+    if (!value) return '—';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '—' : date.toLocaleDateString(currentLocale || undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  },
+
   render() {
     document.getElementById('pageContent').innerHTML = translateTemplate(`
       <div class="page-header">
@@ -50,8 +62,8 @@ const reservations = {
               const c = this.cars.find(x => x.car_id === r.car_id);
               return c ? `${c.make} ${c.model}` : r.car_id;
             }},
-            { key: 'pickup_at',  label: t('col_start') },
-            { key: 'dropoff_at',    label: t('col_end') },
+            { key: 'pickup_at',  label: t('col_start'), render: r => this.formatDate(r.pickup_at) },
+            { key: 'dropoff_at',    label: t('col_end'), render: r => this.formatDate(r.dropoff_at) },
             { key: 'status',      label: t('col_status'), render: r => statusBadge(r.status) },
             { key: 'total_amount',label: t('col_total'),  render: r => formatCurrency(r.total_amount) },
           ], this.data, row => `

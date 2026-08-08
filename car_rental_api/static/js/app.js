@@ -259,6 +259,19 @@ function stat(icon, value, labelKey, color, pageKey = null) {
 
 function buildReservationSummary(items) {
   if (!items.length) return translateTemplate(`<div class="empty-state"><i class="fas fa-calendar"></i> {{no_reservations}}</div>`);
+
+  const formatDate = value => {
+    if (!value) return '—';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '—' : date.toLocaleDateString(currentLocale || undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
   return `
     <table>
       <thead><tr>
@@ -269,10 +282,10 @@ function buildReservationSummary(items) {
         ${items.map(r => `
           <tr>
             <td>#${r.reservation_id}</td>
-            <td>${r.customer_id}</td>
-            <td>${r.car_id}</td>
-            <td>${r.start_date}</td>
-            <td>${r.end_date}</td>
+            <td>${r.customer_id ?? '—'}</td>
+            <td>${r.car_id ?? '—'}</td>
+            <td>${formatDate(r.pickup_at || r.start_date)}</td>
+            <td>${formatDate(r.dropoff_at || r.end_date)}</td>
             <td>${statusBadge(r.status)}</td>
           </tr>`).join('')}
       </tbody>
