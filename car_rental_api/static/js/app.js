@@ -253,7 +253,9 @@ function statusBadge(status) {
   };
   const normalized = (status || '').toString().toLowerCase();
   const cls = map[normalized] || 'badge-gray';
-  const label = normalized ? t(`status_${normalized}`) : '-';
+  const rawStatus = (status || '').toString().trim();
+  const translated = normalized ? t(`status_${normalized}`) : '';
+  const label = translated && !translated.startsWith('status_') ? translated : (rawStatus || '-');
   return `<span class="badge ${cls}">${label}</span>`;
 }
 
