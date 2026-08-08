@@ -4,21 +4,22 @@ from database import get_db
 from models import Reservation
 from schemas import ReservationCreate, ReservationUpdate, ReservationResponse
 from typing import List
+from auth_utils import require_roles
 
 router = APIRouter(prefix="/reservations", tags=["Reservations"])
 
-@router.get("/", response_model=List[ReservationResponse])
+@router.get("/", response_model=List[ReservationResponse], dependencies=[Depends(require_roles("admin", "manager", "agent"))])
 def get_all(db: Session = Depends(get_db)):
     return db.query(Reservation).all()
 
-@router.get("/{id}", response_model=ReservationResponse)
+@router.get("/{id}", response_model=ReservationResponse, dependencies=[Depends(require_roles("admin", "manager", "agent"))])
 def get_one(id: int, db: Session = Depends(get_db)):
     obj = db.query(Reservation).filter(Reservation.reservation_id == id).first()
     if not obj:
         raise HTTPException(status_code=404, detail="Reservation not found")
     return obj
 
-@router.post("/", response_model=ReservationResponse, status_code=201)
+@router.post("/", response_model=ReservationResponse, status_code=201, dependencies=[Depends(require_roles("admin", "manager"))])
 def create(data: ReservationCreate, db: Session = Depends(get_db)):
     obj = Reservation(**data.model_dump())
     db.add(obj)
@@ -26,7 +27,7 @@ def create(data: ReservationCreate, db: Session = Depends(get_db)):
     db.refresh(obj)
     return obj
 
-@router.put("/{id}", response_model=ReservationResponse)
+@router.put("/{id}", response_model=ReservationResponse, dependencies=[Depends(require_roles("admin", "manager"))])
 def update(id: int, data: ReservationUpdate, db: Session = Depends(get_db)):
     obj = db.query(Reservation).filter(Reservation.reservation_id == id).first()
     if not obj:
@@ -37,7 +38,7 @@ def update(id: int, data: ReservationUpdate, db: Session = Depends(get_db)):
     db.refresh(obj)
     return obj
 
-@router.delete("/{id}", status_code=204)
+@router.delete("/{id}", status_code=204, dependencies=[Depends(require_roles("admin", "manager"))])
 def delete(id: int, db: Session = Depends(get_db)):
     obj = db.query(Reservation).filter(Reservation.reservation_id == id).first()
     if not obj:

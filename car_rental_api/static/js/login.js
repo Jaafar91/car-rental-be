@@ -58,6 +58,10 @@ async function bootstrapAuth() {
     if (userLabel) {
       userLabel.textContent = `${authState.staff.first_name} ${authState.staff.last_name} (${(authState.staff.role || 'agent').toUpperCase()})`;
     }
+    const staffNav = document.querySelector('.staff-nav');
+    if (staffNav) {
+      staffNav.style.display = authState.staff?.role?.toLowerCase() === 'admin' ? '' : 'none';
+    }
     if (typeof loadConfig === 'function') {
       await loadConfig();
       await loadLocale(currentLang);

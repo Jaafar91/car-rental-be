@@ -33,12 +33,14 @@ const staff = {
   },
 
   roleBadge(role) {
+    const normalizedRole = (role || '').toLowerCase();
+    const label = normalizedRole ? t(`role_${normalizedRole}`) : '—';
     const map = {
       admin:   'badge-danger',
       manager: 'badge-warning',
       agent:   'badge-info',
     };
-    return `<span class="badge ${map[role] || 'badge-secondary'}">${role || '—'}</span>`;
+    return `<span class="badge ${map[normalizedRole] || 'badge-secondary'}">${label}</span>`;
   },
 
   // ── RENDER ──

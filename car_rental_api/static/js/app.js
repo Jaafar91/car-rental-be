@@ -110,11 +110,24 @@ document.querySelectorAll('.nav-item').forEach(item => {
   item.addEventListener('click', e => {
     e.preventDefault();
     const page = item.dataset.page;
+    if (page === 'staff' && !isAdmin()) {
+      showToast('Only admins can access staff management', 'error');
+      return;
+    }
     navigateTo(page);
   });
 });
 
+function isAdmin() {
+  return Boolean(authState?.staff?.role && authState.staff.role.toLowerCase() === 'admin');
+}
+
 function navigateTo(page) {
+  if (page === 'staff' && !isAdmin()) {
+    showToast('Only admins can access staff management', 'error');
+    page = 'dashboard';
+  }
+
   currentPage = page;
 
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -207,7 +220,7 @@ function buildReservationSummary(items) {
 // ── MODAL HELPERS ──
 function openModal(title, bodyHTML, onSubmit) {
   document.getElementById('modalTitle').textContent = title;
-  document.getElementById('modalBody').innerHTML = bodyHTML;
+  document.getElementById('modalBody').innerHTML = translateTemplate(bodyHTML || '');
   translateDOM(document.getElementById('modal'));
   document.getElementById('modalOverlay').classList.add('open');
 
