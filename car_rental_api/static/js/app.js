@@ -137,7 +137,7 @@ function navigateTo(page) {
 
   const pages = {
     dashboard, branches, car_categories, car_status,
-    cars, customers, staff, reservations, rentals, payments, maintenance
+    cars, customers, profile, staff, reservations, rentals, payments, maintenance
   };
 
   if (pages[page]) pages[page].load();

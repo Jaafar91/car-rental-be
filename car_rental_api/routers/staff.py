@@ -20,6 +20,11 @@ class TokenResponse(BaseModel):
     staff_id: int
     name: str
 
+class PasswordChangeRequest(BaseModel):
+    current_password: str
+    new_password: str
+    confirm_new_password: str
+
 @router.post("/login", response_model=TokenResponse)
 def login(data: LoginRequest, db: Session = Depends(get_db)):
     staff = db.query(Staff).filter(Staff.email == data.email.strip().lower()).first()
@@ -39,6 +44,20 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
 @router.get("/me", response_model=StaffResponse)
 def get_me(staff: Staff = Depends(get_current_staff)):
     return staff
+
+@router.post("/me/password")
+def change_password(data: PasswordChangeRequest, staff: Staff = Depends(get_current_staff), db: Session = Depends(get_db)):
+    if len(data.new_password or "") < 8:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="New password must be at least 8 characters")
+    if data.new_password != data.confirm_new_password:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="New passwords do not match")
+    if not verify_password(data.current_password, staff.password_hash):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Current password is incorrect")
+
+    staff.password_hash = hash_password(data.new_password)
+    db.commit()
+    db.refresh(staff)
+    return {"message": "Password updated successfully"}
 
 @router.get("/", response_model=List[StaffResponse], dependencies=[Depends(require_roles("admin", "manager"))])
 def get_all(db: Session = Depends(get_db)):
