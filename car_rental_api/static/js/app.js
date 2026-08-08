@@ -164,15 +164,15 @@ const dashboard = {
 
       content.innerHTML = translateTemplate(`
         <div class="stats-grid">
-          ${stat('🏢', br.length, 'nav_branches', '#2563eb')}
-          ${stat('🚗', cars.length, 'nav_cars', '#7c3aed')}
-          ${stat('👥', custs.length, 'nav_customers', '#0891b2')}
-          ${stat('👔', staff.length, 'nav_staff', '#065f46')}
-          ${stat('📅', res.length, 'nav_reservations', '#b45309')}
-          ${stat('🔑', rent.length, 'nav_rentals', '#be185d')}
-          ${stat('💳', pay.length, 'nav_payments', '#15803d')}
-          ${stat('🔧', maint.length, 'nav_maintenance', '#dc2626')}
-          ${stat('🏷️', cats.length, 'col_categories', '#6d28d9')}
+          ${stat('🏢', br.length, 'nav_branches', '#2563eb', 'branches')}
+          ${stat('🚗', cars.length, 'nav_cars', '#7c3aed', 'cars')}
+          ${stat('👥', custs.length, 'nav_customers', '#0891b2', 'customers')}
+          ${stat('👔', staff.length, 'nav_staff', '#065f46', 'staff')}
+          ${stat('📅', res.length, 'nav_reservations', '#b45309', 'reservations')}
+          ${stat('🔑', rent.length, 'nav_rentals', '#be185d', 'rentals')}
+          ${stat('💳', pay.length, 'nav_payments', '#15803d', 'payments')}
+          ${stat('🔧', maint.length, 'nav_maintenance', '#dc2626', 'maintenance')}
+          ${stat('🏷️', cats.length, 'col_categories', '#6d28d9', 'car_categories')}
         </div>
 
         <div class="table-wrapper" style="padding:20px">
@@ -180,15 +180,27 @@ const dashboard = {
           ${buildReservationSummary(res.slice(0, 5))}
         </div>
       `);
+
+      content.querySelectorAll('.stat-card[data-page]').forEach(card => {
+        card.addEventListener('click', () => navigateTo(card.dataset.page));
+        card.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            navigateTo(card.dataset.page);
+          }
+        });
+      });
     } catch (e) {
       content.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i>${e.message}</div>`;
     }
   }
 };
 
-function stat(icon, value, labelKey, color) {
+function stat(icon, value, labelKey, color, pageKey = null) {
+  const pageAttr = pageKey ? `data-page="${pageKey}" role="button" tabindex="0"` : '';
+  const cursorStyle = pageKey ? 'cursor:pointer;' : '';
   return `
-    <div class="stat-card" style="border-left-color:${color}">
+    <div class="stat-card" style="border-left-color:${color};${cursorStyle}" ${pageAttr}>
       <div class="stat-icon">${icon}</div>
       <div class="stat-value">${value}</div>
       <div class="stat-label">${t(labelKey)}</div>
