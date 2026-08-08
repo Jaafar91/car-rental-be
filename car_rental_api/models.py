@@ -142,6 +142,7 @@ class Maintenance(Base):
     car_id         = Column(BigInteger, ForeignKey("cars.car_id", ondelete="CASCADE"), nullable=False)
     description    = Column(Text, nullable=False)
     maintenance_type  = Column(String, nullable=False)
+    status         = Column(String(30), nullable=False, default="scheduled")
     scheduled_at   = Column(DateTime(timezone=True), nullable=True)
     completed_at   = Column(DateTime(timezone=True), nullable=True)
     cost_amount    = Column(Numeric(10, 2), nullable=False, default=0)

@@ -38,8 +38,22 @@ def ensure_rental_staff_id_column():
             conn.execute(text("ALTER TABLE rentals ADD COLUMN staff_id BIGINT"))
 
 
+def ensure_maintenance_status_column():
+    with engine.begin() as conn:
+        exists = conn.execute(text("""
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = 'maintenance'
+              AND column_name = 'status'
+        """)).scalar()
+        if not exists:
+            conn.execute(text("ALTER TABLE maintenance ADD COLUMN status VARCHAR(30) DEFAULT 'scheduled'"))
+
+
 ensure_staff_password_hash_column()
 ensure_rental_staff_id_column()
+ensure_maintenance_status_column()
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Car Rental API", version="1.0.0")

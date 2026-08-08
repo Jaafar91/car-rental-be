@@ -184,6 +184,7 @@ class MaintenanceBase(BaseModel):
     car_id: int
     description: Optional[str] = None
     maintenance_type: Optional[str] = None
+    status: Optional[str] = None
     scheduled_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     cost_amount: Optional[Decimal] = None

@@ -33,16 +33,36 @@ const maintenance = {
   },
 
   statusBadge(status) {
+    const normalized = (status || '').toString().toLowerCase();
     const map = {
       scheduled:  'badge-info',
       in_progress:'badge-warning',
       completed:  'badge-success',
       cancelled:  'badge-danger',
     };
-    const label = status ? t(`status_${status}`) : t('placeholder_empty');
-    return `<span class="badge ${map[status] || 'badge-secondary'}">
+    const label = normalized ? t(`status_${normalized}`) : t('placeholder_empty');
+    return `<span class="badge ${map[normalized] || 'badge-secondary'}">
               ${label}
             </span>`;
+  },
+
+  getStatus(row) {
+    const status = (row?.status || '').toString().trim().toLowerCase();
+    if (status) return status;
+    if (row?.completed_at || row?.completed || row?.completion_at) return 'completed';
+    if (row?.scheduled_at || row?.scheduled || row?.schedule_at) return 'scheduled';
+    return 'scheduled';
+  },
+
+  formatDateValue(row, keys) {
+    for (const key of keys) {
+      const value = row?.[key];
+      if (value) {
+        const date = new Date(value);
+        if (!Number.isNaN(date.getTime())) return date.toLocaleDateString();
+      }
+    }
+    return '<span style="color:#94a3b8">—</span>';
   },
 
   // ── RENDER TABLE ──
@@ -89,23 +109,17 @@ const maintenance = {
               {
                 key: 'status',
                 label: t('col_status'),
-                render: row => this.statusBadge(row.status)
+                render: row => this.statusBadge(this.getStatus(row))
               },
               {
-                key: 'scheduled_date',
+                key: 'scheduled_at',
                 label: t('col_scheduled'),
-                render: row =>
-                  row.scheduled_date
-                    ? new Date(row.scheduled_date).toLocaleDateString()
-                    : '<span style="color:#94a3b8">—</span>'
+                render: row => this.formatDateValue(row, ['scheduled_at', 'scheduled', 'schedule_at'])
               },
               {
-                key: 'completion_date',
+                key: 'completed_at',
                 label: t('col_completed'),
-                render: row =>
-                  row.completion_date
-                    ? new Date(row.completion_date).toLocaleDateString()
-                    : '<span style="color:#94a3b8">—</span>'
+                render: row => this.formatDateValue(row, ['completed_at', 'completed', 'completion_at'])
               },
               {
                 key: 'cost_amount',
@@ -162,6 +176,20 @@ const maintenance = {
       </div>`;
   },
 
+  toInputValue(dt) {
+    if (!dt) return '';
+    const d = new Date(dt);
+    if (Number.isNaN(d.getTime())) return '';
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  },
+
+  toApiDateTime(value) {
+    if (!value) return null;
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date.toISOString();
+  },
+
   // ── FORM HTML ──
   formHTML(d = {}) {
     const carOptions = this.cars
@@ -211,7 +239,7 @@ const maintenance = {
           <input
             id="f_maint_sched"
             type="date"
-            value="${d.scheduled_date ? d.scheduled_date.substring(0,10) : ''}"
+            value="${this.toInputValue(d.scheduled_at)}"
           />
         </div>
         <div class="form-group">
@@ -219,7 +247,7 @@ const maintenance = {
           <input
             id="f_maint_comp"
             type="date"
-            value="${d.completion_date ? d.completion_date.substring(0,10) : ''}"
+            value="${this.toInputValue(d.completed_at)}"
           />
         </div>
       </div>
@@ -269,8 +297,8 @@ const maintenance = {
       car_id:           parseInt(car_id),
       maintenance_type,
       status,
-      scheduled_date:   scheduled_date  || null,
-      completion_date:  completion_date || null,
+      scheduled_at:     this.toApiDateTime(scheduled_date),
+      completed_at:     this.toApiDateTime(completion_date),
       cost_amount:      cost_amount !== ''     ? parseFloat(cost_amount) : null,
       description:      description     || null,
     };
