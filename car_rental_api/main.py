@@ -51,9 +51,33 @@ def ensure_maintenance_status_column():
             conn.execute(text("ALTER TABLE maintenance ADD COLUMN status VARCHAR(30) DEFAULT 'scheduled'"))
 
 
+def ensure_reservation_agreement_columns():
+    with engine.begin() as conn:
+        agreement_signed_exists = conn.execute(text("""
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = 'reservations'
+              AND column_name = 'agreement_signed'
+        """)).scalar()
+        if not agreement_signed_exists:
+            conn.execute(text("ALTER TABLE reservations ADD COLUMN agreement_signed BOOLEAN DEFAULT FALSE"))
+
+        agreement_signature_exists = conn.execute(text("""
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = 'reservations'
+              AND column_name = 'agreement_signature'
+        """)).scalar()
+        if not agreement_signature_exists:
+            conn.execute(text("ALTER TABLE reservations ADD COLUMN agreement_signature TEXT"))
+
+
 ensure_staff_password_hash_column()
 ensure_rental_staff_id_column()
 ensure_maintenance_status_column()
+ensure_reservation_agreement_columns()
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Car Rental API", version="1.0.0")

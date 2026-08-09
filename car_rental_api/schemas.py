@@ -225,6 +225,8 @@ class ReservationBase(BaseModel):
     dropoff_at: datetime
     status: Optional[ReservationStatus] = ReservationStatus.pending
     notes: Optional[str] = None
+    agreement_signed: Optional[bool] = False
+    agreement_signature: Optional[str] = None
 
 
 class ReservationCreate(ReservationBase):
@@ -253,7 +255,7 @@ class RentalStatus(str, Enum):
 
 
 class RentalBase(BaseModel):
-    reservation_id: Optional[int] = None
+    reservation_id: int
     customer_id: int
     car_id: int
     staff_id: Optional[int] = None

@@ -265,6 +265,7 @@
   "status_available": "Disponible",
   "status_cancelled": "Annulé",
   "status_completed": "Terminé",
+  "status_confirmed": "Confirmé",
   "status_in_progress": "En cours",
   "status_inactive": "Inactif",
   "status_overdue": "En retard",

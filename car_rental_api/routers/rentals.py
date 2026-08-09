@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
-from models import Rental, Staff
+from models import Rental, Reservation, Staff
 from schemas import RentalCreate, RentalUpdate, RentalResponse
 from typing import List
 from auth_utils import get_current_staff, require_roles
@@ -22,6 +22,21 @@ def get_one(id: int, db: Session = Depends(get_db)):
 @router.post("/", response_model=RentalResponse, status_code=201, dependencies=[Depends(require_roles("admin", "manager", "agent"))])
 def create(data: RentalCreate, staff: Staff = Depends(get_current_staff), db: Session = Depends(get_db)):
     payload = data.model_dump()
+    reservation_id = payload.get("reservation_id")
+    if not reservation_id:
+        raise HTTPException(status_code=400, detail="Rental must be linked to an existing reservation")
+
+    reservation = db.query(Reservation).filter(Reservation.reservation_id == reservation_id).first()
+    if not reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+
+    if payload.get("customer_id") and payload.get("customer_id") != reservation.customer_id:
+        raise HTTPException(status_code=400, detail="Rental customer must match the reservation customer")
+    if payload.get("car_id") and payload.get("car_id") != reservation.car_id:
+        raise HTTPException(status_code=400, detail="Rental car must match the reservation car")
+
+    payload["customer_id"] = reservation.customer_id
+    payload["car_id"] = reservation.car_id
     payload["staff_id"] = staff.staff_id
     obj = Rental(**payload)
     db.add(obj)
@@ -35,6 +50,16 @@ def update(id: int, data: RentalUpdate, staff: Staff = Depends(get_current_staff
     if not obj:
         raise HTTPException(status_code=404, detail="Rental not found")
     payload = data.model_dump(exclude_unset=True)
+    if "reservation_id" in payload and payload["reservation_id"] is not None:
+        reservation = db.query(Reservation).filter(Reservation.reservation_id == payload["reservation_id"]).first()
+        if not reservation:
+            raise HTTPException(status_code=404, detail="Reservation not found")
+        if payload.get("customer_id") and payload.get("customer_id") != reservation.customer_id:
+            raise HTTPException(status_code=400, detail="Rental customer must match the reservation customer")
+        if payload.get("car_id") and payload.get("car_id") != reservation.car_id:
+            raise HTTPException(status_code=400, detail="Rental car must match the reservation car")
+        payload["customer_id"] = reservation.customer_id
+        payload["car_id"] = reservation.car_id
     if "staff_id" not in payload:
         payload["staff_id"] = obj.staff_id or staff.staff_id
     for k, v in payload.items():

@@ -23,6 +23,13 @@ class Settings:
         load_env_file()
         self.default_currency = os.getenv("DEFAULT_CURRENCY", "").strip().upper() or "USD"
         self.default_locale = os.getenv("DEFAULT_LOCALE", "").strip() or "en-US"
+        self.smtp_host = os.getenv("SMTP_HOST", "").strip()
+        self.smtp_port = int(os.getenv("SMTP_PORT", "587"))
+        self.smtp_username = os.getenv("SMTP_USERNAME", "").strip()
+        self.smtp_password = os.getenv("SMTP_PASSWORD", "").strip()
+        self.smtp_from_email = os.getenv("SMTP_FROM_EMAIL", "").strip()
+        self.smtp_use_tls = os.getenv("SMTP_USE_TLS", "true").strip().lower() == "true"
+        self.smtp_use_ssl = os.getenv("SMTP_USE_SSL", "false").strip().lower() == "true"
 
 
 settings = Settings()

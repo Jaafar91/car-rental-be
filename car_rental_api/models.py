@@ -169,6 +169,8 @@ class Reservation(Base):
     dropoff_at     = Column(DateTime(timezone=True), nullable=False)
     status         = Column(String(30), nullable=False, default="pending")
     notes          = Column(Text, nullable=True)
+    agreement_signed = Column(Boolean, nullable=False, default=False)
+    agreement_signature = Column(Text, nullable=True)
     created_at     = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     __table_args__ = (

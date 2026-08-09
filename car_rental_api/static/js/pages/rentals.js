@@ -12,10 +12,11 @@ const rentals = {
         <div class="spinner"></div> {{loading_rentals}}
       </div>`);
     try {
-      [this.data, this.cars, this.customers, this.staff] = await Promise.all([
+      [this.data, this.cars, this.customers, this.reservations, this.staff] = await Promise.all([
         api.get('/rentals/'),
         api.get('/cars/'),
         api.get('/customers/'),
+        api.get('/reservations/'),
         api.get('/staff/'),
       ]);
       this.render();
@@ -82,7 +83,7 @@ const rentals = {
       <div class="page-header">
         <h2><i class="fas fa-car-side"></i> {{nav_rentals}}</h2>
         <button class="btn btn-primary" onclick="rentals.openCreate()">
-          <i class="fas fa-plus"></i> {{btn_add_rental}}
+          <i class="fas fa-plus"></i> Create from Reservation
         </button>
       </div>
 
@@ -181,6 +182,14 @@ const rentals = {
         ${c.full_name} (${c.email})
       </option>`).join('');
 
+    const reservationOpts = this.reservations
+      .map(r => {
+        const customer = this.customers.find(c => c.customer_id === r.customer_id);
+        const car = this.cars.find(c => c.car_id === r.car_id);
+        const label = `${customer ? customer.full_name : `Customer #${r.customer_id}`} • ${car ? `${car.make} ${car.model}` : `Car #${r.car_id}`} • ${new Date(r.pickup_at).toLocaleString()}`;
+        return `<option value="${r.reservation_id}" ${d.reservation_id === r.reservation_id ? 'selected' : ''}>#${r.reservation_id} — ${label}</option>`;
+      }).join('');
+
     const statuses = ['active', 'completed', 'overdue', 'cancelled'];
     const fmtDT = val => val ? val.substring(0, 16) : '';
     const currencySymbol = currentCurrency || 'USD';
@@ -198,32 +207,40 @@ const rentals = {
     const labelNotes = t('label_notes');
 
     return `
-      <!-- Row 1: Car & Customer -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
         <div class="form-group">
-          <label for="f_rental_car">${labelCar} <span style="color:red">*</span></label>
-          <select id="f_rental_car">
-            <option value="">${placeholderSelectCar}</option>
-            ${carOpts}
+          <label for="f_rental_reservation">Reservation <span style="color:red">*</span></label>
+          <select id="f_rental_reservation">
+            <option value="">Select reservation</option>
+            ${reservationOpts}
           </select>
+          <div id="reservationSummary" style="margin-top:0.6rem;padding:0.75rem;border:1px solid #334155;border-radius:8px;background:#0f172a;color:#e2e8f0;font-size:0.92rem;">
+            <div style="color:#94a3b8;">Choose a reservation and the customer and car will be filled automatically.</div>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="f_rental_cust">${labelCustomer} <span style="color:red">*</span></label>
-          <select id="f_rental_cust">
-            <option value="">${placeholderSelectCustomer}</option>
-            ${custOpts}
-          </select>
-        </div>
-      </div>
-
-      <!-- Row 2: Status -->
-      <div style="display:grid;grid-template-columns:1fr;gap:1rem;margin-bottom:1rem;">
         <div class="form-group">
           <label for="f_rental_status">${labelStatus}</label>
           <select id="f_rental_status">
             ${statuses.map(s =>
               `<option value="${s}" ${d.status === s ? 'selected' : ''}>${t(`status_${s}`)}</option>`
             ).join('')}
+          </select>
+        </div>
+      </div>
+
+      <div style="display:none;">
+        <div class="form-group">
+          <label for="f_rental_car">${labelCar} <span style="color:red">*</span></label>
+          <select id="f_rental_car" ${d.reservation_id ? 'disabled' : ''}>
+            <option value="">${placeholderSelectCar}</option>
+            ${carOpts}
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="f_rental_cust">${labelCustomer} <span style="color:red">*</span></label>
+          <select id="f_rental_cust" ${d.reservation_id ? 'disabled' : ''}>
+            <option value="">${placeholderSelectCustomer}</option>
+            ${custOpts}
           </select>
         </div>
       </div>
@@ -400,8 +417,10 @@ const rentals = {
 
   // ── COLLECT FORM DATA ──
   getFormData() {
-    const car_id          = document.getElementById('f_rental_car').value;
-    const customer_id     = document.getElementById('f_rental_cust').value;
+    const reservation_id  = document.getElementById('f_rental_reservation').value;
+    const reservation     = this.reservations.find(r => String(r.reservation_id) === String(reservation_id)) || null;
+    const car_id          = reservation ? reservation.car_id : document.getElementById('f_rental_car').value;
+    const customer_id     = reservation ? reservation.customer_id : document.getElementById('f_rental_cust').value;
     const status          = document.getElementById('f_rental_status').value;
     const rental_date     = document.getElementById('f_rental_date').value;
     const due_date        = document.getElementById('f_due_date').value;
@@ -414,6 +433,7 @@ const rentals = {
 
     if (!car_id)      { showToast(t('error_select_car'), 'error');      return null; }
     if (!customer_id) { showToast(t('error_select_customer'), 'error'); return null; }
+    if (!reservation_id) { showToast('Please select a reservation for this rental', 'error'); return null; }
     if (!rental_date) { showToast(t('error_rental_date_required'), 'error');  return null; }
     if (!due_date)    { showToast(t('error_due_date_required'), 'error');     return null; }
     if (due_date < rental_date) {
@@ -428,6 +448,7 @@ const rentals = {
     return {
       car_id:          parseInt(car_id),
       customer_id:     parseInt(customer_id),
+      reservation_id:  parseInt(reservation_id),
       status,
       rental_date,
       due_date,
@@ -460,6 +481,7 @@ const rentals = {
       }
     );
     this.setupCalculation(); // ✅ wire up live calculation after modal renders
+    this.attachReservationSync();
   },
 
   // ── OPEN EDIT ──
@@ -483,6 +505,47 @@ const rentals = {
       }
     );
     this.setupCalculation(); // ✅ wire up live calculation after modal renders
+    this.attachReservationSync();
+  },
+
+  attachReservationSync() {
+    const reservationSelect = document.getElementById('f_rental_reservation');
+    const carSelect = document.getElementById('f_rental_car');
+    const customerSelect = document.getElementById('f_rental_cust');
+    const summary = document.getElementById('reservationSummary');
+    if (!reservationSelect || !carSelect || !customerSelect) return;
+
+    const sync = () => {
+      const reservationId = reservationSelect.value;
+      const reservation = this.reservations.find(r => String(r.reservation_id) === String(reservationId));
+      if (!reservation) {
+        if (summary) {
+          summary.innerHTML = '<div style="color:#94a3b8;">Choose a reservation and the customer and car will be filled automatically.</div>';
+        }
+        return;
+      }
+
+      if (carSelect.value !== String(reservation.car_id)) {
+        carSelect.value = reservation.car_id ? String(reservation.car_id) : '';
+      }
+      if (customerSelect.value !== String(reservation.customer_id)) {
+        customerSelect.value = reservation.customer_id ? String(reservation.customer_id) : '';
+      }
+
+      if (summary) {
+        const customer = this.customers.find(c => c.customer_id === reservation.customer_id);
+        const car = this.cars.find(c => c.car_id === reservation.car_id);
+        summary.innerHTML = `
+          <div style="display:grid;gap:0.25rem;">
+            <div><strong>Customer:</strong> ${customer ? customer.full_name : `#${reservation.customer_id}`}</div>
+            <div><strong>Car:</strong> ${car ? `${car.make} ${car.model} (${car.license_plate})` : `#${reservation.car_id}`}</div>
+            <div style="color:#10b981;"><strong>Reservation:</strong> #${reservation.reservation_id} • ${new Date(reservation.pickup_at).toLocaleString()}</div>
+          </div>`;
+      }
+    };
+
+    reservationSelect.onchange = sync;
+    sync();
   },
 
   // ── DELETE ──

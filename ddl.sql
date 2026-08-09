@@ -140,6 +140,8 @@ CREATE TABLE public.reservations (
 	dropoff_at timestamptz NOT NULL,
 	status varchar(30) NOT NULL DEFAULT 'pending'::character varying,
 	notes text NULL,
+	agreement_signed bool NOT NULL DEFAULT false,
+	agreement_signature text NULL,
 	created_at timestamptz NOT NULL DEFAULT now(),
 	car_id int4 NOT NULL,
 	total_amount numeric(18, 3) NULL,
