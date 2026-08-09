@@ -334,7 +334,7 @@ const customers = {
         <input id="f_cust_identity_document" type="file" accept="application/pdf" />
         ${d.identity_document_path ? `
           <small style="color:#10b981;display:block;margin-top:.35rem;">
-            Uploaded: <a href="/customers/${d.customer_id}/document" target="_blank" style="color:#818cf8;">Open PDF</a>
+            Uploaded: <a href="#" onclick="customers.openIdentityDocument(${d.customer_id}); return false;" style="color:#818cf8;">Open PDF</a>
           </small>` : ''}
       </div>`;
   },
@@ -374,6 +374,31 @@ const customers = {
       license_no:  license_no  || null,
       license_exp: license_exp || null,
     };
+  },
+
+  async openIdentityDocument(customerId) {
+    try {
+      const res = await fetch(`/customers/${customerId}/document`, {
+        headers: authState?.token ? { Authorization: `Bearer ${authState.token}` } : {},
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: res.statusText }));
+        throw new Error(err.detail || 'Unable to open document');
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `customer_${customerId}_identity.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      showToast(e.message, 'error');
+    }
   },
 
   // ─────────────────────────────────────────────
