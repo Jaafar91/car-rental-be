@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from database import get_db
 from models import Customer
@@ -6,6 +7,7 @@ from schemas import CustomerCreate, CustomerUpdate, CustomerResponse
 from typing import List, Optional
 from auth_utils import require_roles
 from file_utils import save_identity_document
+from pathlib import Path
 
 router = APIRouter(prefix="/customers", tags=["Customers"])
 
@@ -109,6 +111,20 @@ def upload_document(
     db.commit()
     db.refresh(obj)
     return obj
+
+@router.get("/{id}/document", dependencies=[Depends(require_roles("admin", "manager", "agent"))])
+def download_document(id: int, db: Session = Depends(get_db)):
+    obj = db.query(Customer).filter(Customer.customer_id == id).first()
+    if not obj:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    if not obj.identity_document_path:
+        raise HTTPException(status_code=404, detail="No document uploaded")
+
+    file_path = Path(obj.identity_document_path.lstrip("/"))
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Document file not found")
+
+    return FileResponse(file_path, media_type="application/pdf", filename=file_path.name)
 
 @router.delete("/{id}", status_code=204, dependencies=[Depends(require_roles("admin", "manager"))])
 def delete(id: int, db: Session = Depends(get_db)):

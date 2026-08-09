@@ -334,7 +334,7 @@ const customers = {
         <input id="f_cust_identity_document" type="file" accept="application/pdf" />
         ${d.identity_document_path ? `
           <small style="color:#10b981;display:block;margin-top:.35rem;">
-            Uploaded: <a href="${d.identity_document_path}" target="_blank" style="color:#818cf8;">Open PDF</a>
+            Uploaded: <a href="/customers/${d.customer_id}/document" target="_blank" style="color:#818cf8;">Open PDF</a>
           </small>` : ''}
       </div>`;
   },

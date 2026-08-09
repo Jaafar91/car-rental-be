@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from pathlib import Path
 from sqlalchemy import text
 from database import engine, Base
@@ -113,7 +113,6 @@ app.state.settings = settings
 
 # ✅ Serve static files (locales/ is inside static/)
 app.mount("/static", StaticFiles(directory="static"), name="static")
-app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 # ✅ Serve dashboard at root
 @app.api_route("/", methods=["GET", "HEAD"])
