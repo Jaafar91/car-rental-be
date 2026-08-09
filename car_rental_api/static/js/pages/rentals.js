@@ -95,7 +95,7 @@ const rentals = {
             this.data.filter(x => x.status === 'active').length, '#10b981')}
         ${this._statCard('fas fa-exclamation-circle',t('stat_overdue'),
             this.data.filter(x => x.status === 'overdue').length, '#ef4444')}
-        ${this._statCard('fas fa-dollar-sign',      t('stat_total_revenue'),
+        ${this._statCard('fas fa-coins',      t('stat_total_revenue'),
             formatCurrency(totalRevenue), '#f59e0b')}
       </div>
 

@@ -6,6 +6,23 @@ let currentCurrency = '';
 let currentLocale = '';
 let locale = {};
 let rolePermissions = [];
+const alwaysAllowedPages = ['dashboard', 'profile', 'reports'];
+const pageLabelFallbacks = {
+  dashboard: 'Dashboard',
+  branches: 'Branches',
+  car_categories: 'Car Categories',
+  car_status: 'Car Status',
+  cars: 'Cars',
+  customers: 'Customers',
+  profile: 'Profile',
+  staff: 'Staff',
+  reservations: 'Reservations',
+  rentals: 'Rentals',
+  reports: 'Reports',
+  payments: 'Payments',
+  maintenance: 'Maintenance',
+  role_access: 'Role Access',
+};
 
 async function loadConfig() {
   try {
@@ -73,17 +90,29 @@ function t(key, vars = {}) {
 function translateDOM(root = document) {
   root.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.dataset.i18n;
-    if (key) el.textContent = t(key);
+    if (!key) return;
+    const translated = t(key);
+    if (translated && translated !== key) {
+      el.textContent = translated;
+    }
   });
 
   root.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
     const key = el.dataset.i18nPlaceholder;
-    if (key) el.placeholder = t(key);
+    if (!key) return;
+    const translated = t(key);
+    if (translated && translated !== key) {
+      el.placeholder = translated;
+    }
   });
 
   root.querySelectorAll('[data-i18n-title]').forEach(el => {
     const key = el.dataset.i18nTitle;
-    if (key) el.title = t(key);
+    if (!key) return;
+    const translated = t(key);
+    if (translated && translated !== key) {
+      el.title = translated;
+    }
   });
 }
 
@@ -101,14 +130,16 @@ function isAdmin() {
 
 function hasModuleAccess(moduleKey) {
   if (!moduleKey) return true;
+  const normalized = String(moduleKey).toLowerCase();
+  if (alwaysAllowedPages.includes(normalized)) return true;
   if (isAdmin()) return true;
-  return rolePermissions.includes(String(moduleKey).toLowerCase());
+  return rolePermissions.includes(normalized);
 }
 
 function updateSidebarVisibility() {
   document.querySelectorAll('.nav-item').forEach(item => {
     const moduleKey = (item.dataset.module || item.dataset.page || '').toLowerCase();
-    const allowed = !moduleKey || moduleKey === 'dashboard' || isAdmin() || hasModuleAccess(moduleKey);
+    const allowed = !moduleKey || alwaysAllowedPages.includes(moduleKey) || isAdmin() || hasModuleAccess(moduleKey);
     item.style.display = allowed ? '' : 'none';
   });
 }
@@ -125,7 +156,7 @@ async function refreshModuleAccess() {
     rolePermissions = (response?.modules || []).map(item => String(item).toLowerCase());
     updateSidebarVisibility();
 
-    if (currentPage && currentPage !== 'dashboard' && currentPage !== 'profile' && !hasModuleAccess(currentPage)) {
+    if (currentPage && !alwaysAllowedPages.includes(currentPage) && !hasModuleAccess(currentPage)) {
       showToast('You do not have access to this module', 'error');
       navigateTo('dashboard');
     }
@@ -155,7 +186,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
       showToast('Only admins can access staff management', 'error');
       return;
     }
-    if (page !== 'dashboard' && page !== 'profile' && !hasModuleAccess(page)) {
+    if (!alwaysAllowedPages.includes(page) && !hasModuleAccess(page)) {
       showToast('You do not have access to this module', 'error');
       return;
     }
@@ -169,7 +200,7 @@ function navigateTo(page) {
     page = 'dashboard';
   }
 
-  if (page !== 'dashboard' && page !== 'profile' && !hasModuleAccess(page)) {
+  if (!alwaysAllowedPages.includes(page) && !hasModuleAccess(page)) {
     showToast('You do not have access to this module', 'error');
     page = 'dashboard';
   }
@@ -179,11 +210,15 @@ function navigateTo(page) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.querySelector(`[data-page="${page}"]`)?.classList.add('active');
 
-  document.getElementById('pageTitle').textContent = t(`nav_${page}`);
+  const pageTitleKey = `nav_${page}`;
+  const translatedTitle = t(pageTitleKey);
+  document.getElementById('pageTitle').textContent = translatedTitle && translatedTitle !== pageTitleKey
+    ? translatedTitle
+    : pageLabelFallbacks[page] || page;
 
   const pages = {
     dashboard, branches, car_categories, car_status,
-    cars, customers, profile, staff, reservations, rentals, payments, maintenance, role_access
+    cars, customers, profile, staff, reservations, rentals, reports, payments, maintenance, role_access
   };
 
   if (pages[page]) pages[page].load();
@@ -215,7 +250,8 @@ const dashboard = {
         { icon: '👔', value: staff.length, labelKey: 'nav_staff', color: '#065f46', pageKey: 'staff' },
         { icon: '📅', value: res.length, labelKey: 'nav_reservations', color: '#b45309', pageKey: 'reservations' },
         { icon: '🔑', value: rent.length, labelKey: 'nav_rentals', color: '#be185d', pageKey: 'rentals' },
-        { icon: '💳', value: pay.length, labelKey: 'nav_payments', color: '#15803d', pageKey: 'payments' },
+        { icon: '�', value: rent.length, labelKey: 'nav_reports', color: '#f59e0b', pageKey: 'reports' },
+        { icon: '�💳', value: pay.length, labelKey: 'nav_payments', color: '#15803d', pageKey: 'payments' },
         { icon: '🔧', value: maint.length, labelKey: 'nav_maintenance', color: '#dc2626', pageKey: 'maintenance' },
         { icon: '🏷️', value: cats.length, labelKey: 'nav_car_categories', color: '#6d28d9', pageKey: 'car_categories' },
       ].filter(card => !card.pageKey || isAdmin() || hasModuleAccess(card.pageKey));
