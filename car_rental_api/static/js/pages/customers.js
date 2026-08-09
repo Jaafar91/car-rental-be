@@ -327,6 +327,15 @@ const customers = {
             </small>` : ''}
         </div>
 
+      </div>
+
+      <div class="form-group">
+        <label for="f_cust_identity_document">Identity Document (PDF)</label>
+        <input id="f_cust_identity_document" type="file" accept="application/pdf" />
+        ${d.identity_document_path ? `
+          <small style="color:#10b981;display:block;margin-top:.35rem;">
+            Uploaded: <a href="${d.identity_document_path}" target="_blank" style="color:#818cf8;">Open PDF</a>
+          </small>` : ''}
       </div>`;
   },
 
@@ -378,7 +387,29 @@ const customers = {
         const data = this.getFormData();
         if (!data) return;
         try {
-          await api.post('/customers/', data);
+          const fileInput = document.getElementById('f_cust_identity_document');
+          const file = fileInput?.files?.[0] || null;
+          if (file) {
+            const formData = new FormData();
+            formData.append('full_name', data.full_name);
+            formData.append('email', data.email || '');
+            formData.append('phone', data.phone || '');
+            formData.append('license_no', data.license_no || '');
+            formData.append('license_exp', data.license_exp || '');
+            formData.append('file', file);
+
+            const res = await fetch('/customers/with-document', {
+              method: 'POST',
+              headers: authState?.token ? { Authorization: `Bearer ${authState.token}` } : {},
+              body: formData,
+            });
+            if (!res.ok) {
+              const err = await res.json().catch(() => ({ detail: res.statusText }));
+              throw new Error(err.detail || 'Upload failed');
+            }
+          } else {
+            await api.post('/customers/', data);
+          }
           showToast(t('toast_customer_created'), 'success');
           closeModal();
           this.load();
@@ -403,7 +434,30 @@ const customers = {
         const data = this.getFormData();
         if (!data) return;
         try {
-          await api.put(`/customers/${id}`, data);
+          const fileInput = document.getElementById('f_cust_identity_document');
+          const file = fileInput?.files?.[0] || null;
+
+          if (file) {
+            const formData = new FormData();
+            formData.append('full_name', data.full_name);
+            formData.append('email', data.email || '');
+            formData.append('phone', data.phone || '');
+            formData.append('license_no', data.license_no || '');
+            formData.append('license_exp', data.license_exp || '');
+            formData.append('file', file);
+
+            const res = await fetch(`/customers/${id}/document`, {
+              method: 'PUT',
+              headers: authState?.token ? { Authorization: `Bearer ${authState.token}` } : {},
+              body: formData,
+            });
+            if (!res.ok) {
+              const err = await res.json().catch(() => ({ detail: res.statusText }));
+              throw new Error(err.detail || 'Upload failed');
+            }
+          } else {
+            await api.put(`/customers/${id}`, data);
+          }
           showToast(t('toast_customer_updated'), 'success');
           closeModal();
           this.load();

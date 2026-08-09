@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from pathlib import Path
 from sqlalchemy import text
 from database import engine, Base
 from config import settings
@@ -84,17 +85,35 @@ def ensure_reservation_agreement_columns():
             conn.execute(text("ALTER TABLE reservations ADD COLUMN deposit_amount NUMERIC(10,2) DEFAULT 0"))
 
 
+def ensure_customer_identity_document_column():
+    with engine.begin() as conn:
+        exists = conn.execute(text("""
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = 'customers'
+              AND column_name = 'identity_document_path'
+        """)).scalar()
+        if not exists:
+            conn.execute(text("ALTER TABLE customers ADD COLUMN identity_document_path VARCHAR(500)"))
+
+
 ensure_staff_password_hash_column()
 ensure_rental_staff_id_column()
 ensure_maintenance_status_column()
 ensure_reservation_agreement_columns()
+ensure_customer_identity_document_column()
 Base.metadata.create_all(bind=engine)
+
+UPLOAD_DIR = Path("uploads")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 app = FastAPI(title="Car Rental API", version="1.0.0")
 app.state.settings = settings
 
 # ✅ Serve static files (locales/ is inside static/)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 # ✅ Serve dashboard at root
 @app.api_route("/", methods=["GET", "HEAD"])

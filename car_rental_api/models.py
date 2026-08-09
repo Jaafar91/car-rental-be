@@ -64,6 +64,7 @@ class Customer(Base):
     phone       = Column(String(30), nullable=True)
     license_no  = Column(String(60), nullable=True)
     license_exp = Column(Date, nullable=True)
+    identity_document_path = Column(String(500), nullable=True)
     created_at  = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 

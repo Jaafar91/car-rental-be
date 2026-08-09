@@ -94,6 +94,7 @@ class CustomerBase(BaseModel):
     phone: Optional[str] = None
     license_no: Optional[str] = None
     license_exp: Optional[date] = None
+    identity_document_path: Optional[str] = None
 
 
 class CustomerCreate(CustomerBase):
