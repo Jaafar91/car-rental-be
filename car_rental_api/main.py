@@ -73,6 +73,16 @@ def ensure_reservation_agreement_columns():
         if not agreement_signature_exists:
             conn.execute(text("ALTER TABLE reservations ADD COLUMN agreement_signature TEXT"))
 
+        deposit_exists = conn.execute(text("""
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = 'reservations'
+              AND column_name = 'deposit_amount'
+        """)).scalar()
+        if not deposit_exists:
+            conn.execute(text("ALTER TABLE reservations ADD COLUMN deposit_amount NUMERIC(10,2) DEFAULT 0"))
+
 
 ensure_staff_password_hash_column()
 ensure_rental_staff_id_column()

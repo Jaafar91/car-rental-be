@@ -221,6 +221,7 @@ class ReservationBase(BaseModel):
     branch_id: Optional[int] = None
     car_id: int
     total_amount: Optional[Decimal] = Decimal("0.00")
+    deposit_amount: Optional[Decimal] = Decimal("0.00")
     pickup_at: datetime
     dropoff_at: datetime
     status: Optional[ReservationStatus] = ReservationStatus.pending

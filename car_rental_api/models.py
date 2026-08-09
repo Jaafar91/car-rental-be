@@ -165,6 +165,7 @@ class Reservation(Base):
     branch_id      = Column(BigInteger, ForeignKey("branches.branch_id"), nullable=True)
     car_id         = Column(BigInteger, ForeignKey("cars.car_id"), nullable=False)
     total_amount   = Column(Numeric(10, 2), nullable=True)
+    deposit_amount = Column(Numeric(10, 2), nullable=True)
     pickup_at      = Column(DateTime(timezone=True), nullable=False)
     dropoff_at     = Column(DateTime(timezone=True), nullable=False)
     status         = Column(String(30), nullable=False, default="pending")

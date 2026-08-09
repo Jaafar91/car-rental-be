@@ -73,6 +73,7 @@ const reservations = {
               return `<span style="color:${isFuture ? '#10b981' : '#f59e0b'};font-weight:600;">${isFuture ? 'Future booking' : 'Current/Recent'}</span>`;
             }}, 
             { key: 'status',      label: t('col_status'), render: r => statusBadge(r.status) },
+            { key: 'deposit_amount', label: 'Deposit', render: r => formatCurrency(r.deposit_amount) },
             { key: 'total_amount',label: t('col_total'),  render: r => formatCurrency(r.total_amount) },
           ], this.data, row => `
             <button class="btn btn-warning btn-sm" title="${t('btn_edit')}" onclick="reservations.openEdit(${row.reservation_id})">
@@ -136,6 +137,10 @@ const reservations = {
             }).join('')}
           </select>
         </div>
+        <div class="form-group"><label>Deposit Amount</label>
+          <input id="f_deposit_amount" type="number" step="0.01"
+                 value="${d.deposit_amount || ''}"/>
+        </div>
         <div class="form-group"><label>{{label_total_amount}}</label>
           <input id="f_total_amount" type="number" step="0.01"
                  value="${d.total_amount || ''}"/>
@@ -176,6 +181,7 @@ const reservations = {
       pickup_at:    pickup  ? new Date(pickup).toISOString()  : null,  // ✅ Send ISO string
       dropoff_at:   dropoff ? new Date(dropoff).toISOString() : null,  // ✅ Send ISO string
       status:        document.getElementById('f_status').value,
+      deposit_amount: parseFloat(document.getElementById('f_deposit_amount').value) || null,
       total_amount:  parseFloat(document.getElementById('f_total_amount').value) || null,
       notes:         document.getElementById('f_notes').value,
       agreement_signed: signed,
