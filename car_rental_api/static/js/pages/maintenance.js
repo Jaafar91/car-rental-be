@@ -15,6 +15,7 @@ const maintenance = {
         api.get('/maintenance/'),
         api.get('/cars/'),
       ]);
+      this.data.sort((a, b) => a.maintenance_id - b.maintenance_id);
       this.render();
     } catch (e) {
       content.innerHTML = `
@@ -336,10 +337,14 @@ const maintenance = {
         const data = this.getFormData();
         if (!data) return;
         try {
-          await api.put(`/maintenance/${id}`, data);
+          const updated = await api.put(`/maintenance/${id}`, data);
+          const idx = this.data.findIndex(x => x.maintenance_id === id);
+          if (idx >= 0) {
+            this.data[idx] = { ...this.data[idx], ...updated };
+          }
           showToast(t('toast_maintenance_updated'), 'success');
           closeModal();
-          this.load();
+          this.render();
         } catch (e) {
           showToast(e.message, 'error');
         }

@@ -6,6 +6,7 @@ const branches = {
     content.innerHTML = translateTemplate(`<div class="loading"><div class="spinner"></div> {{loading}}</div>`);
     try {
       this.data = await api.get('/branches/');
+      this.data.sort((a, b) => a.branch_id - b.branch_id);
       this.render();
     } catch (e) {
       showToast(e.message, 'error');
@@ -108,10 +109,14 @@ const branches = {
     const d = this.data.find(x => x.branch_id === id);
     openModal(t('modal_edit_branch'), this.formHTML(d), async () => {
       try {
-        await api.put(`/branches/${id}`, this.getFormData());
+        const updated = await api.put(`/branches/${id}`, this.getFormData());
+        const idx = this.data.findIndex(x => x.branch_id === id);
+        if (idx >= 0) {
+          this.data[idx] = { ...this.data[idx], ...updated };
+        }
         showToast(t('toast_branch_updated'), 'success');
         closeModal();
-        this.load();
+        this.render();
       } catch (e) { showToast(e.message, 'error'); }
     });
   },

@@ -163,10 +163,14 @@ const car_status = {
         const data = this.getFormData();
         if (!data) return;
         try {
-          await api.put(`/car-status/${id}`, data);
+          const updated = await api.put(`/car-status/${id}`, data);
+          const idx = this.data.findIndex(x => x.status_id === id);
+          if (idx >= 0) {
+            this.data[idx] = { ...this.data[idx], ...updated };
+          }
           showToast(t('toast_status_updated'), 'success');
           closeModal();
-          this.load();
+          this.render();
         } catch (e) {
           showToast(e.message, 'error');
         }

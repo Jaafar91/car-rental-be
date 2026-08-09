@@ -12,6 +12,7 @@ const cars = {
         api.get('/car-status/'),
         api.get('/branches/'),
       ]);
+      this.data.sort((a, b) => a.car_id - b.car_id);
       this.render();
     } catch (e) { showToast(e.message, 'error'); }
   },
@@ -111,9 +112,13 @@ const cars = {
     const d = this.data.find(x => x.car_id === id);
     openModal(t('modal_edit_car'), this.formHTML(d), async () => {
       try {
-        await api.put(`/cars/${id}`, this.getFormData());
+        const updated = await api.put(`/cars/${id}`, this.getFormData());
+        const idx = this.data.findIndex(x => x.car_id === id);
+        if (idx >= 0) {
+          this.data[idx] = { ...this.data[idx], ...updated };
+        }
         showToast(t('toast_car_updated'), 'success');
-        closeModal(); this.load();
+        closeModal(); this.render();
       } catch (e) { showToast(e.message, 'error'); }
     });
   },

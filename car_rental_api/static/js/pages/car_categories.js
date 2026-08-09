@@ -11,6 +11,7 @@ const car_categories = {
 
     try {
       this.data = await api.get('/car-categories/');
+      this.data.sort((a, b) => a.category_id - b.category_id);
       this.render();
     } catch (e) {
       content.innerHTML = translateTemplate(`
@@ -184,10 +185,14 @@ const car_categories = {
         if (!data) return;
 
         try {
-          await api.put(`/car-categories/${id}`, data);
+          const updated = await api.put(`/car-categories/${id}`, data);
+          const idx = this.data.findIndex(x => x.category_id === id);
+          if (idx >= 0) {
+            this.data[idx] = { ...this.data[idx], ...updated };
+          }
           showToast(t('toast_category_updated'), 'success');
           closeModal();
-          this.load();
+          this.render();
         } catch (e) {
           showToast(e.message, 'error');
         }

@@ -12,7 +12,8 @@ const customers = {
       </div>`);
 
     try {
-      this.data = await api.get('/customers/');
+      const customersList = await api.get('/customers/');
+      this.data = customersList.sort((a, b) => a.customer_id - b.customer_id);
       this.render();
     } catch (e) {
       content.innerHTML = `
@@ -206,6 +207,11 @@ const customers = {
 
             // Actions
             row => `
+              ${row.identity_document_path ? `
+                <a href="#" class="btn btn-success btn-sm" title="Download document" onclick="customers.openIdentityDocument(${row.customer_id}); return false;">
+                  <i class="fas fa-download"></i>
+                </a>
+              ` : ''}
               <button
                 class="btn btn-warning btn-sm"
                 title="${t('btn_edit')}"
@@ -251,6 +257,12 @@ const customers = {
   // ─────────────────────────────────────────────
   // FORM HTML
   // ─────────────────────────────────────────────
+  _documentFileName(path) {
+    if (!path) return '';
+    const name = path.split('/').pop() || path;
+    return decodeURIComponent(name);
+  },
+
   formHTML(d = {}) {
     return `
 
@@ -330,11 +342,12 @@ const customers = {
       </div>
 
       <div class="form-group">
-        <label for="f_cust_identity_document">Identity Document (PDF)</label>
-        <input id="f_cust_identity_document" type="file" accept="application/pdf" />
+        <label for="f_cust_identity_document">Identity Document (PDF or image)</label>
+        <input id="f_cust_identity_document" type="file" accept="application/pdf,image/*" multiple />
         ${d.identity_document_path ? `
           <small style="color:#10b981;display:block;margin-top:.35rem;">
-            Uploaded: <a href="#" onclick="customers.openIdentityDocument(${d.customer_id}); return false;" style="color:#818cf8;">Open PDF</a>
+            Current file: <strong>${this._documentFileName(d.identity_document_path)}</strong><br>
+            <a href="#" onclick="customers.openIdentityDocument(${d.customer_id}); return false;" style="color:#818cf8;">Open PDF</a>
           </small>` : ''}
       </div>`;
   },
@@ -389,9 +402,15 @@ const customers = {
 
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
+      const disposition = res.headers.get('content-disposition') || '';
+      const filenameMatch = disposition.match(/filename\*?=(?:UTF-8''|")?([^;"']+)/i);
+      const downloadName = filenameMatch
+        ? decodeURIComponent(filenameMatch[1])
+        : `customer_${customerId}_identity.pdf`;
+
       const link = document.createElement('a');
       link.href = url;
-      link.download = `customer_${customerId}_identity.pdf`;
+      link.download = downloadName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -413,15 +432,15 @@ const customers = {
         if (!data) return;
         try {
           const fileInput = document.getElementById('f_cust_identity_document');
-          const file = fileInput?.files?.[0] || null;
-          if (file) {
+          const files = Array.from(fileInput?.files || []);
+          if (files.length) {
             const formData = new FormData();
             formData.append('full_name', data.full_name);
             formData.append('email', data.email || '');
             formData.append('phone', data.phone || '');
             formData.append('license_no', data.license_no || '');
             formData.append('license_exp', data.license_exp || '');
-            formData.append('file', file);
+            files.forEach(file => formData.append('files', file));
 
             const res = await fetch('/customers/with-document', {
               method: 'POST',
@@ -460,16 +479,16 @@ const customers = {
         if (!data) return;
         try {
           const fileInput = document.getElementById('f_cust_identity_document');
-          const file = fileInput?.files?.[0] || null;
+          const files = Array.from(fileInput?.files || []);
 
-          if (file) {
+          if (files.length) {
             const formData = new FormData();
             formData.append('full_name', data.full_name);
             formData.append('email', data.email || '');
             formData.append('phone', data.phone || '');
             formData.append('license_no', data.license_no || '');
             formData.append('license_exp', data.license_exp || '');
-            formData.append('file', file);
+            files.forEach(file => formData.append('files', file));
 
             const res = await fetch(`/customers/${id}/document`, {
               method: 'PUT',

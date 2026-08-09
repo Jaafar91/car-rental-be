@@ -13,7 +13,7 @@ router = APIRouter(prefix="/customers", tags=["Customers"])
 
 @router.get("/", response_model=List[CustomerResponse], dependencies=[Depends(require_roles("admin", "manager", "agent"))])
 def get_all(db: Session = Depends(get_db)):
-    return db.query(Customer).all()
+    return db.query(Customer).order_by(Customer.customer_id.asc()).all()
 
 @router.get("/{id}", response_model=CustomerResponse, dependencies=[Depends(require_roles("admin", "manager", "agent"))])
 def get_one(id: int, db: Session = Depends(get_db)):
@@ -37,7 +37,7 @@ def create_with_document(
     phone: Optional[str] = Form(None),
     license_no: Optional[str] = Form(None),
     license_exp: Optional[str] = Form(None),
-    file: UploadFile = File(None),
+    files: List[UploadFile] = File(default_factory=list),
     db: Session = Depends(get_db),
 ):
     customer = Customer(
@@ -51,9 +51,10 @@ def create_with_document(
     db.commit()
     db.refresh(customer)
 
-    if file is not None and getattr(file, "filename", None):
+    valid_files = [f for f in files if f is not None and getattr(f, "filename", None)]
+    if valid_files:
         try:
-            document_path = save_identity_document(file, customer.customer_id)
+            document_path = save_identity_document(valid_files, customer.customer_id, customer_name=customer.full_name)
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -82,7 +83,7 @@ def upload_document(
     phone: Optional[str] = Form(None),
     license_no: Optional[str] = Form(None),
     license_exp: Optional[str] = Form(None),
-    file: UploadFile = File(None),
+    files: List[UploadFile] = File(default_factory=list),
     db: Session = Depends(get_db),
 ):
     obj = db.query(Customer).filter(Customer.customer_id == id).first()
@@ -100,9 +101,10 @@ def upload_document(
     if license_exp is not None:
         obj.license_exp = license_exp and license_exp[:10] or None
 
-    if file is not None and getattr(file, "filename", None):
+    valid_files = [f for f in files if f is not None and getattr(f, "filename", None)]
+    if valid_files:
         try:
-            document_path = save_identity_document(file, obj.customer_id)
+            document_path = save_identity_document(valid_files, obj.customer_id, customer_name=obj.full_name)
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 

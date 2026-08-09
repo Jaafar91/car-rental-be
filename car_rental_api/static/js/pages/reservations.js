@@ -11,6 +11,7 @@ const reservations = {
         api.get('/customers/'),
         api.get('/cars/'),
       ]);
+      this.data.sort((a, b) => a.reservation_id - b.reservation_id);
       this.render();
     } catch (e) { showToast(e.message, 'error'); }
   },

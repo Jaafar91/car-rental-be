@@ -10,6 +10,7 @@ const payments = {
         api.get('/payments/'),
         api.get('/rentals/'),
       ]);
+      this.data.sort((a, b) => a.payment_id - b.payment_id);
       this.render();
     } catch (e) { showToast(e.message, 'error'); }
   },
@@ -109,9 +110,13 @@ const payments = {
     const d = this.data.find(x => x.payment_id === id);
     openModal(t('modal_edit_payment'), this.formHTML(d), async () => {
       try {
-        await api.put(`/payments/${id}`, this.getFormData());
+        const updated = await api.put(`/payments/${id}`, this.getFormData());
+        const idx = this.data.findIndex(x => x.payment_id === id);
+        if (idx >= 0) {
+          this.data[idx] = { ...this.data[idx], ...updated };
+        }
         showToast(t('toast_payment_updated'), 'success');
-        closeModal(); this.load();
+        closeModal(); this.render();
       } catch (e) { showToast(e.message, 'error'); }
     });
   },

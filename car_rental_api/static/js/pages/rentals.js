@@ -19,6 +19,7 @@ const rentals = {
         api.get('/reservations/'),
         api.get('/staff/'),
       ]);
+      this.data.sort((a, b) => a.rental_id - b.rental_id);
       this.render();
     } catch (e) {
       content.innerHTML = `

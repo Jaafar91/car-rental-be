@@ -15,6 +15,7 @@ const staff = {
         api.get('/staff/'),
         api.get('/branches/'),
       ]);
+      this.data.sort((a, b) => a.staff_id - b.staff_id);
       this.render();
     } catch (e) {
       content.innerHTML = `
@@ -313,10 +314,14 @@ const staff = {
         const data = this.getFormData(true);
         if (!data) return;
         try {
-          await api.put(`/staff/${id}`, data);
+          const updated = await api.put(`/staff/${id}`, data);
+          const idx = this.data.findIndex(x => x.staff_id === id);
+          if (idx >= 0) {
+            this.data[idx] = { ...this.data[idx], ...updated };
+          }
           showToast(t('toast_staff_updated'), 'success');
           closeModal();
-          this.load();
+          this.render();
         } catch (e) {
           showToast(e.message, 'error');
         }
